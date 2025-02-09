@@ -4,7 +4,7 @@ import * as React from "react";
 import { Home, Compass, BookOpen, Info, Mail, Settings2, PlusCircle } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
-import { TeamSwitcher } from "@/components/team-switcher";
+import { Logo } from "@/components/logo";
 import {
   Sidebar,
   SidebarContent,
@@ -36,7 +36,7 @@ const data = {
       icon: Compass,
     },
     {
-      title: "Create API", // ✅ Added Create API route
+      title: "Create API", 
       url: "/create-api",
       icon: PlusCircle,
     },
@@ -67,9 +67,9 @@ const data = {
 
 export function AppSidebar(props) {
   return (
-    <Sidebar className="border-r-0" {...props}>
+    <Sidebar collapsible="icon" className="border-r-0" {...props}>
       <SidebarHeader className="flex h-16 items-center justify-between px-4 border-b">
-        <Link className="font-bold text-3xl">PseudoApi</Link>
+       <Logo/>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />

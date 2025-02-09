@@ -14,12 +14,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Outlet, useLocation } from "react-router-dom"; // ✅ Import useLocation
+import { Link, Outlet, useLocation } from "react-router-dom"; 
 
 export default function App() {
-  const location = useLocation(); // ✅ Get current path
+  const location = useLocation(); 
 
-  // 🔹 Define route titles based on paths
   const routeTitles = {
     "/": "Home",
     "/explore": "Explore",
@@ -30,16 +29,15 @@ export default function App() {
     "/profile/:id": "Profile",
   };
 
-  // 🔹 Get the active route title (default to "Dashboard" if not found)
   const activeRouteTitle = routeTitles[location.pathname] || "Dashboard";
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset className="flex flex-col w-full min-h-screen">
           {/* Navbar */}
-          <header className="flex h-16 items-center justify-between px-4 border-b mb-4">
+          <header className="sticky top-0 z-50 flex h-16 items-center justify-between px-4 border-b mb-4 backdrop-blur-lg shadow-md">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="h-4" />
@@ -49,7 +47,6 @@ export default function App() {
             {/* Right section (Theme Toggle + User Avatar) */}
             <div className="flex items-center gap-4">
               <ModeToggle />
-              {/* User Avatar Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <Avatar>
@@ -66,10 +63,20 @@ export default function App() {
             </div>
           </header>
 
-          {/* Main Content (Dynamic Routing) */}
-          <div className="p-4">
-            <Outlet /> {/* ✅ This will render the active route component */}
-          </div>
+          {/* Main content */}
+          <main className="flex-grow flex flex-col">
+            <Outlet /> 
+          </main>
+
+          {/* Footer */}
+          <footer className="mt-auto border-t bg-muted/50 backdrop-blur-md text-sm text-muted-foreground py-4 px-6 flex justify-between items-center">
+            <span>© {new Date().getFullYear()} PseudoAPI. All rights reserved.</span>
+            <div className="flex gap-4">
+              <Link href="/about" className="hover:underline">About</Link>
+              <Link href="/contact" className="hover:underline">Contact</Link>
+              <Link href="/privacy-policy" className="hover:underline">Privacy</Link>
+            </div>
+          </footer>
         </SidebarInset>
       </SidebarProvider>
     </ThemeProvider>

@@ -14,10 +14,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Link, Outlet, useLocation } from "react-router-dom"; 
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/clerk-react";
+import { Button } from "./components/ui/button";
 
 export default function App() {
-  const location = useLocation(); 
+  const location = useLocation();
 
   const routeTitles = {
     "/": "Home",
@@ -41,40 +43,47 @@ export default function App() {
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="h-4" />
-              <h1 className="text-lg font-semibold">{activeRouteTitle}</h1> 
+              <h1 className="text-lg font-semibold">{activeRouteTitle}</h1>
             </div>
 
-            {/* Right section (Theme Toggle + User Avatar) */}
+            {/* Right section (Theme Toggle + Auth) */}
             <div className="flex items-center gap-4">
               <ModeToggle />
-              <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <Avatar>
-                    <AvatarImage src="https://github.com/shadcn.png" alt="User" />
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                  <DropdownMenuItem>Settings</DropdownMenuItem>
-                  <DropdownMenuItem>Logout</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <Button varient="primary" >
+                    Sign In
+                  </Button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <Button varient="primary" >
+                    Sign up
+                  </Button>
+                </SignUpButton>
+              </SignedOut>
+              <SignedIn>
+                <UserButton appearance={{
+                  elements: {
+                    userButtonAvatarBox: "w-10 h-10 border-2 border-muted-foreground",
+                    userButtonPopoverCard: "bg-background border border-border shadow-lg",
+                  }
+                }} />
+              </SignedIn>
             </div>
           </header>
 
           {/* Main content */}
           <main className="flex-grow flex flex-col">
-            <Outlet /> 
+            <Outlet />
           </main>
 
           {/* Footer */}
           <footer className="mt-auto border-t bg-muted/50 backdrop-blur-md text-sm text-muted-foreground py-4 px-6 flex justify-between items-center">
             <span>© {new Date().getFullYear()} PseudoAPI. All rights reserved.</span>
             <div className="flex gap-4">
-              <Link href="/about" className="hover:underline">About</Link>
-              <Link href="/contact" className="hover:underline">Contact</Link>
-              <Link href="/privacy-policy" className="hover:underline">Privacy</Link>
+              <Link to="/about" className="hover:underline">About</Link>
+              <Link to="/contact" className="hover:underline">Contact</Link>
+              <Link to="/privacy-policy" className="hover:underline">Privacy</Link>
             </div>
           </footer>
         </SidebarInset>

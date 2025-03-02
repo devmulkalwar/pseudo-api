@@ -1,7 +1,5 @@
-"use client";
-
 import * as React from "react";
-import { Home, Compass, BookOpen, Info, Mail, Settings2, PlusCircle } from "lucide-react";
+import { Home, Compass, BookOpen, Info, Mail, Settings2, PlusCircle, User } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { Logo } from "@/components/logo";
@@ -55,6 +53,11 @@ const data = {
       url: "/contact",
       icon: Mail,
     },
+    {
+      title: "Profile",
+      url: "/profile/1",
+      icon: User,
+    },
   ],
   navSecondary: [
     {
@@ -74,9 +77,6 @@ export function AppSidebar(props) {
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -6,20 +7,21 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ModeToggle } from "@/components/mode-toggle";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/clerk-react";
-import { Button } from "./components/ui/button";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/clerk-react";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function App() {
   const location = useLocation();
+  const { isLoaded } = useAuth(); // Check Clerk's authentication state
+  const [loading, setLoading] = useState(true);
+
+  // Simulate a loading delay (optional)
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1000); // 1-second delay
+    return () => clearTimeout(timer);
+  }, []);
 
   const routeTitles = {
     "/": "Home",
@@ -32,6 +34,15 @@ export default function App() {
   };
 
   const activeRouteTitle = routeTitles[location.pathname] || "Dashboard";
+
+  // Show loader until Clerk is loaded and custom loader finishes
+  if (loading || !isLoaded) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-background">
+        <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -51,14 +62,10 @@ export default function App() {
               <ModeToggle />
               <SignedOut>
                 <SignInButton mode="modal">
-                  <Button varient="primary" >
-                    Sign In
-                  </Button>
+                  <Button variant="secondary">Sign In</Button>
                 </SignInButton>
                 <SignUpButton mode="modal">
-                  <Button varient="primary" >
-                    Sign up
-                  </Button>
+                  <Button variant="secondary">Sign Up</Button>
                 </SignUpButton>
               </SignedOut>
               <SignedIn>

@@ -11,6 +11,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
+import Footer from "./components/Footer";
 
 export default function App() {
   const location = useLocation();
@@ -84,15 +85,7 @@ export default function App() {
             <Outlet />
           </main>
 
-          {/* Footer */}
-          <footer className="mt-auto border-t bg-muted/50 backdrop-blur-md text-sm text-muted-foreground py-4 px-6 flex justify-between items-center">
-            <span>© {new Date().getFullYear()} PseudoAPI. All rights reserved.</span>
-            <div className="flex gap-4">
-              <Link to="/about" className="hover:underline">About</Link>
-              <Link to="/contact" className="hover:underline">Contact</Link>
-              <Link to="/privacy-policy" className="hover:underline">Privacy</Link>
-            </div>
-          </footer>
+         <Footer/>
         </SidebarInset>
       </SidebarProvider>
     </ThemeProvider>

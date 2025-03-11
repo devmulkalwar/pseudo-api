@@ -23,8 +23,10 @@ export const clerkWebHook = async (req, res) => {
 
   console.log(evt.data);
 
-  const { id, username, email_addresses, image_url, first_name, last_name } = evt.data;
-  const email = email_addresses[0]?.email_address;
+  const { id, username, email_addresses, image_url, first_name, last_name } = evt.data || {};
+
+  // Ensure email_addresses exists before accessing it
+  const email = email_addresses?.[0]?.email_address || "";
   const fullName = `${first_name || ""} ${last_name || ""}`.trim();
   const defaultUsername = email ? email.split("@")[0] : `user_${Date.now()}`;
 
@@ -36,7 +38,7 @@ export const clerkWebHook = async (req, res) => {
           clerkUserId: id,
           username: username || defaultUsername,
           email,
-          profileImage: image_url,
+          profileImage: image_url || "",
           fullName,
           createdApis: [], 
           starredApis: [], 

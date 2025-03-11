@@ -1,116 +1,157 @@
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Clipboard, Edit, Trash, Star, Plus, Settings } from "lucide-react";
+import { Star, Plus, ChevronRight, Bookmark, BookPlusIcon, PlusIcon, BookPlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Profile = () => {
+  const createdAPIs = [
+    { id: 1, name: "User API", description: "Mock user data with authentication", stars: 45 },
+    { id: 2, name: "E-commerce API", description: "Product listings and orders", stars: 32 },
+    { id: 3, name: "Blog API", description: "Content management system", stars: 28 },
+  ];
+
+  const starredAPIs = [
+    { id: 4, name: "Weather API", description: "Global weather data", stars: 120 },
+    { id: 5, name: "Payment API", description: "Payment gateway simulation", stars: 98 },
+  ];
+
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-4">
+    <div className="flex-grow m-auto flex flex-col justify-center items-center p-4 space-y-6">
       {/* Profile Header */}
-      <div className="flex flex-col md:flex-row items-center gap-8 px-4">
-        <Avatar className="h-32 w-32 border-4 border-foreground/10">
+      <div className="flex flex-col md:flex-row items-center gap-8">
+        <Avatar className="h-32 w-32 border-4 border-muted">
           <AvatarImage src="/user-avatar.jpg" />
-          <AvatarFallback className="text-4xl">SD</AvatarFallback>
+          <AvatarFallback className="text-4xl font-medium">PA</AvatarFallback>
         </Avatar>
 
-        <div className="flex-1 space-y-4">
-          <div className="flex flex-col md:flex-row items-start gap-4">
-            <h1 className="text-2xl font-light">@sarah_dev</h1>
-            <div className="flex gap-2">
-              <Button variant="outline" className="gap-2">
-                <Edit className="h-4 w-4" />
-                Edit Profile
-              </Button>
-              <Button className="rounded-full" size="icon">
-                <Plus className="h-4 w-4" />
-              </Button>
+        <div className="flex-1 space-y-4 text-center md:text-left">
+          <h1 className="text-3xl font-bold">@pseudoapi_dev</h1>
+          
+          {/* Stats Row */}
+          <div className="flex justify-center md:justify-start gap-8">
+            <div className="text-center">
+              <p className="text-2xl font-bold">{createdAPIs.length}</p>
+              <p className="text-muted-foreground">Created APIs</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold">1.2k</p>
+              <p className="text-muted-foreground">Total Stars</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold">{starredAPIs.length}</p>
+              <p className="text-muted-foreground">Starred APIs</p>
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="flex gap-8">
-            <div className="text-center">
-              <span className="block font-bold">12</span>
-              <span className="text-muted-foreground">APIs</span>
-            </div>
-            <div className="text-center">
-              <span className="block font-bold">1.2k</span>
-              <span className="text-muted-foreground">Stars</span>
-            </div>
-            <div className="text-center">
-              <span className="block font-bold">24</span>
-              <span className="text-muted-foreground">Starred</span>
-            </div>
-          </div>
+          {/* Bio */}
+          <p className="text-muted-foreground max-w-prose">
+            Building mock APIs for better testing experiences
+          </p>
 
-          <div className="space-y-2">
-            <h2 className="text-lg font-semibold">Sarah Developer</h2>
-            <p className="text-muted-foreground">
-              Full-stack developer • Building mock APIs for better testing experiences
-            </p>
-            <p className="text-sm text-muted-foreground">sarah@example.com</p>
+          <div className="flex justify-center md:justify-start gap-2 mt-4">
+            <Button variant="outline" className="gap-2">
+              <PlusIcon className="h-5 w-5" />
+              New API
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Tabs Section */}
       <Tabs defaultValue="created" className="w-full">
-        <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
+        <TabsList className="w-full flex rounded-lg bg-muted p-1 h-auto">
           <TabsTrigger 
             value="created" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-6"
+            className="flex-1 gap-2 py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
-            <Settings className="h-4 w-4 mr-2" />
-            Created APIs
+            <BookPlus className="h-4 w-4" />
+            <span className="text-sm">Created APIs</span>
+            <span className="ml-1 text-muted-foreground">({createdAPIs.length})</span>
           </TabsTrigger>
+          
           <TabsTrigger 
             value="starred" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-6"
+            className="flex-1 gap-2 py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
-            <Star className="h-4 w-4 mr-2" />
-            Starred APIs
+             <Star className="h-4 w-4" />
+            <span className="text-sm">Starred APIs</span>
+            <span className="ml-1 text-muted-foreground">({starredAPIs.length})</span>
           </TabsTrigger>
         </TabsList>
 
-        {/* Content Grid */}
-        <TabsContent value="created">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
-              <Card key={item} className="group relative aspect-square hover:shadow-lg transition-all">
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                
-                <CardContent className="flex flex-col justify-between h-full p-4">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-background mix-blend-difference">
-                      API v{item}
-                    </CardTitle>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="text-background hover:bg-background/10">
-                        <Edit className="h-4 w-4" />
+        {/* Content Sections */}
+        <div className="mt-6 w-full">
+          <TabsContent value="created">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {createdAPIs.length === 0 ? (
+                <div className="col-span-full text-center py-12 space-y-4 text-muted-foreground">
+                  <Star className="h-12 w-12 mx-auto" />
+                  <p>No APIs created yet</p>
+                </div>
+              ) : (
+                createdAPIs.map((api) => (
+                  <Card key={api.id} className="hover:shadow-md transition-shadow group">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">{api.name}</CardTitle>
+                      <CardDescription className="text-sm line-clamp-2">
+                        {api.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex items-center justify-between pt-0">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                        <span>{api.stars}</span>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <ChevronRight className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="text-background hover:bg-background/10">
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="outline" size="sm" className="gap-2 text-background border-background/30 hover:bg-background/10">
-                      <Clipboard className="h-4 w-4" />
-                      Copy URL
-                    </Button>
-                    <span className="text-sm text-background/80">2024-03-15</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
 
-        <TabsContent value="starred">
-          {/* Similar grid structure for starred APIs */}
-        </TabsContent>
+          <TabsContent value="starred">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {starredAPIs.length === 0 ? (
+                <div className="col-span-full text-center py-12 space-y-4 text-muted-foreground">
+                  <Bookmark className="h-12 w-12 mx-auto" />
+                  <p>No starred APIs yet</p>
+                </div>
+              ) : (
+                starredAPIs.map((api) => (
+                  <Card key={api.id} className="hover:shadow-md transition-shadow group">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">{api.name}</CardTitle>
+                      <CardDescription className="text-sm line-clamp-2">
+                        {api.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex items-center justify-between pt-0">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                        <span>{api.stars}</span>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );

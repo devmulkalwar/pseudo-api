@@ -5,6 +5,7 @@ import cors from "cors";
 import { clerkMiddleware } from "@clerk/express";
 import connectDB from "./config/connectDB.js";
 import userRouter from "./routes/user.routes.js";
+import apiRouter from "./routes/api.routes.js";
 import webhookRouter from "./routes/webhook.route.js";
 
 dotenv.config();
@@ -31,6 +32,7 @@ app.use((req, res, next) => {
 // Routes
 
 app.use("/api/users", userRouter);
+app.use("/api/pseudoapi",apiRouter);
 
 app.get("/",(req,res)=>{
   res.send("Hello World");

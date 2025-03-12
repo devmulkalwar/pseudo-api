@@ -1,8 +1,6 @@
 import User from "../models/user.model.js";
 
-// @desc   Get all users
-// @route  GET /api/users
-// @access Private (Requires Authentication)
+
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}, "-__v -createdAt -updatedAt"); // Exclude metadata fields
@@ -13,9 +11,7 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// @desc   Get user by Clerk User ID
-// @route  GET /api/users/:clerkUserId
-// @access Private (Requires Authentication)
+
 export const getUsersByClerkId = async (req, res) => {
   try {
     const { clerkUserId } = req.params;

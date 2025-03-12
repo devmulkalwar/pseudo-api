@@ -12,42 +12,37 @@ const apiSchema = new Schema(
       required: true,
       unique: true,
       trim: true,
-    }, 
+    },
     description: {
       type: String,
       maxlength: 500,
-    }, 
+    },
     endpoint: {
       type: String,
-      required: true,
       unique: true,
-    }, 
-    fields: [
+    },
+    schema: [
       {
         fieldName: { type: String, required: true },
-        fieldType: {
-          type: String,
-          required: true,
-        },
-        required: { type: Boolean, default: false },
+        fieldType: { type: String, required: true },
       },
-    ], 
+    ],
+    entries: {
+      type: Number,
+      default: 50,
+    },
     isPublic: {
       type: Boolean,
       default: true,
-    }, 
-    starredBy: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ], 
-    tags: [
-      {
-        type: String,
-        trim: true,
-      },
-    ], 
+    },
+    starredBy: {
+      type: [{ type: Schema.Types.ObjectId, ref: "User" }],
+      default: undefined, // ✅ Fix: Prevents Mongoose from treating `[]` incorrectly
+    },
+    tags: {
+      type: [{ type: String, trim: true }],
+      default: undefined, // ✅ Fix: Prevents validation errors on empty arrays
+    },
   },
   { timestamps: true }
 );

@@ -1,5 +1,6 @@
 import API from "../models/api.model.js";
 import { generateFakeData } from "../utils/faker.utils.js";
+import mongoose from "mongoose";
 
 // Utility function for error handling
 const handleError = (res, message, error = null) => {
@@ -106,6 +107,75 @@ export const defineSchema = async (req, res) => {
     res.json({ success: true, message: "Schema updated successfully" });
   } catch (error) {
     handleError(res, "Error updating schema", error);
+  }
+};
+
+//get schema 
+export const getSchema = async (req, res) => {
+  try {
+    const { apiId } = req.params;
+
+    // Find API by ID
+    const api = await API.findById(apiId);
+    if (!api) {
+      return res.status(404).json({ success: false, message: "API not found" });
+    }
+
+    // Return schema and entry count
+    res.json({ success: true, schema: api.schema, entries: api.entries });
+  } catch (error) {
+    handleError(res, "Error retrieving schema", error);
+  }
+};
+
+export const editSchema = async (req, res) => {
+  try {
+    const { apiId } = req.params;
+    const { schema, entries } = req.body;
+
+    if (!Array.isArray(schema) || schema.length === 0) {
+      return res.status(400).json({ success: false, message: "Schema must be a non-empty array" });
+    }
+
+    for (const field of schema) {
+      if (!field.fieldName || !field.fieldType) {
+        return res.status(400).json({ success: false, message: "Each field must have 'fieldName' and 'fieldType'" });
+      }
+    }
+
+    const api = await API.findById(apiId);
+    if (!api) return res.status(404).json({ success: false, message: "API not found" });
+
+    // ✅ Create a map of existing fields (_id -> field)
+    const existingSchemaMap = new Map(api.schema.map(field => [field._id.toString(), field]));
+
+    // ✅ Process schema update while keeping unedited fields
+    const updatedSchema = api.schema.map(field => {
+      const editedField = schema.find(f => f._id === field._id.toString());
+
+      return editedField
+        ? { ...field, fieldName: editedField.fieldName, fieldType: editedField.fieldType } // Update edited fields
+        : field; // Keep unedited fields as is
+    });
+
+    // ✅ Add new fields that don’t have an _id
+    schema.forEach(field => {
+      if (!field._id) {
+        updatedSchema.push({ _id: new mongoose.Types.ObjectId(), ...field });
+      }
+    });
+
+    api.schema = updatedSchema;
+
+    // ✅ Update entries if provided
+    if (entries !== undefined) {
+      api.entries = entries;
+    }
+
+    await api.save();
+    res.json({ success: true, message: "Schema updated successfully", schema: api.schema });
+  } catch (error) {
+    handleError(res, "Error editing schema", error);
   }
 };
 

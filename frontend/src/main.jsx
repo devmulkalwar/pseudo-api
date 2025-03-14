@@ -12,6 +12,7 @@ import Documentation from "./pages/Documentation";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import ProtectedRoute from "./components/ProtectedRoute"; // Import the protected route
+import GlobalProvider from "./context/GlobalProvider";
 
 // Clerk Frontend API Key (Replace with your actual key)
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -41,10 +42,12 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")).render(
-  <ClerkProvider publishableKey={clerkPubKey}>
-    <RouterProvider
-      router={router}
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-    />
-  </ClerkProvider>
+  <GlobalProvider>
+    <ClerkProvider publishableKey={clerkPubKey}>
+      <RouterProvider
+        router={router}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      />
+    </ClerkProvider>
+  </GlobalProvider>
 );

@@ -13,6 +13,7 @@ dotenv.config();
 const app = express();
 connectDB();
 // Middleware
+app.use("/api/pseudoapi/:apiId", cors({ origin: "*", credentials: true }));
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use("/webhooks", webhookRouter);
 app.use(clerkMiddleware());

@@ -8,66 +8,45 @@ const handleError = (res, message, error = null) => {
   return res.status(500).json({ success: false, message, error });
 };
 
-// Create API
+// ✅ Create API
 export const createApi = async (req, res) => {
   try {
     const { owner, name, description, isPublic, tags, starredBy } = req.body;
 
-    if (!owner || !name) {
-      return res.status(400).json({ success: false, message: "Owner and Name are required" });
-    }
+    if (!owner || !name) return res.status(400).json({ success: false, message: "Owner and Name are required" });
 
     const existingApi = await API.findOne({ name });
-    if (existingApi) {
-      return res.status(400).json({ success: false, message: "API with this name already exists" });
-    }
+    if (existingApi) return res.status(400).json({ success: false, message: "API with this name already exists" });
 
-    const formattedTags = Array.isArray(tags) ? tags.map(tag => String(tag)) : [];
-    const formattedStarredBy = Array.isArray(starredBy) && starredBy.length > 0
-      ? starredBy.map(id => new mongoose.Types.ObjectId(id))
-      : undefined;
+    const formattedTags = tags?.map(tag => String(tag)) || [];
+    const formattedStarredBy = starredBy?.map(id => new mongoose.Types.ObjectId(id)) || [];
 
-    const newApi = new API({
-      owner,
-      name,
-      description,
-      isPublic,
-      tags: formattedTags.length > 0 ? formattedTags : undefined,
-      starredBy: formattedStarredBy,
-    });
+    const newApi = new API({ owner, name, description, isPublic, tags: formattedTags, starredBy: formattedStarredBy });
+    newApi.endpoint = `/api/${newApi._id}`;
 
-    const savedApi = await newApi.save();
-    savedApi.endpoint = `/api/${savedApi._id}`;
-    await savedApi.save();
-
-    res.json({ success: true, apiUrl: `http://localhost:3000${savedApi.endpoint}` });
+    await newApi.save();
+    res.json({ success: true, apiUrl: `http://localhost:3000${newApi.endpoint}` });
   } catch (error) {
     handleError(res, "Error creating API", error);
   }
 };
 
-// Edit API
+// ✅ Edit API
 export const editApi = async (req, res) => {
   try {
     const { apiId } = req.params;
-    const { name, description, isPublic, tags } = req.body;
+    const updates = req.body;
 
-    const api = await API.findById(apiId);
+    const api = await API.findByIdAndUpdate(apiId, updates, { new: true });
     if (!api) return res.status(404).json({ success: false, message: "API not found" });
 
-    if (name) api.name = name;
-    if (description) api.description = description;
-    if (isPublic !== undefined) api.isPublic = isPublic;
-    if (tags) api.tags = tags;
-
-    await api.save();
     res.json({ success: true, message: "API updated successfully", api });
   } catch (error) {
     handleError(res, "Error updating API", error);
   }
 };
 
-// Delete API
+// ✅ Delete API
 export const deleteApi = async (req, res) => {
   try {
     const { apiId } = req.params;
@@ -81,7 +60,7 @@ export const deleteApi = async (req, res) => {
   }
 };
 
-// Define Schema
+// ✅ Define Schema
 export const defineSchema = async (req, res) => {
   try {
     const { apiId } = req.params;
@@ -91,43 +70,33 @@ export const defineSchema = async (req, res) => {
       return res.status(400).json({ success: false, message: "Schema must be a non-empty array" });
     }
 
-    for (const field of schema) {
-      if (!field.fieldName || !field.fieldType) {
-        return res.status(400).json({ success: false, message: "Each field must have 'fieldName' and 'fieldType'" });
-      }
+    if (schema.some(field => !field.fieldName || !field.fieldType)) {
+      return res.status(400).json({ success: false, message: "Each field must have 'fieldName' and 'fieldType'" });
     }
 
-    const api = await API.findById(apiId);
+    const api = await API.findByIdAndUpdate(apiId, { schema, entries }, { new: true });
     if (!api) return res.status(404).json({ success: false, message: "API not found" });
 
-    api.schema = schema;
-    api.entries = entries;
-
-    await api.save();
-    res.json({ success: true, message: "Schema updated successfully" });
+    res.json({ success: true, message: "Schema updated successfully", schema: api.schema });
   } catch (error) {
     handleError(res, "Error updating schema", error);
   }
 };
 
-//get schema 
+// ✅ Get Schema
 export const getSchema = async (req, res) => {
   try {
     const { apiId } = req.params;
-
-    // Find API by ID
     const api = await API.findById(apiId);
-    if (!api) {
-      return res.status(404).json({ success: false, message: "API not found" });
-    }
+    if (!api) return res.status(404).json({ success: false, message: "API not found" });
 
-    // Return schema and entry count
     res.json({ success: true, schema: api.schema, entries: api.entries });
   } catch (error) {
     handleError(res, "Error retrieving schema", error);
   }
 };
 
+// ✅ Edit Schema (Preserve Unedited Fields)
 export const editSchema = async (req, res) => {
   try {
     const { apiId } = req.params;
@@ -137,40 +106,23 @@ export const editSchema = async (req, res) => {
       return res.status(400).json({ success: false, message: "Schema must be a non-empty array" });
     }
 
-    for (const field of schema) {
-      if (!field.fieldName || !field.fieldType) {
-        return res.status(400).json({ success: false, message: "Each field must have 'fieldName' and 'fieldType'" });
-      }
+    if (schema.some(field => !field.fieldName || !field.fieldType)) {
+      return res.status(400).json({ success: false, message: "Each field must have 'fieldName' and 'fieldType'" });
     }
 
     const api = await API.findById(apiId);
     if (!api) return res.status(404).json({ success: false, message: "API not found" });
 
-    // ✅ Create a map of existing fields (_id -> field)
     const existingSchemaMap = new Map(api.schema.map(field => [field._id.toString(), field]));
 
-    // ✅ Process schema update while keeping unedited fields
-    const updatedSchema = api.schema.map(field => {
-      const editedField = schema.find(f => f._id === field._id.toString());
-
-      return editedField
-        ? { ...field, fieldName: editedField.fieldName, fieldType: editedField.fieldType } // Update edited fields
-        : field; // Keep unedited fields as is
-    });
-
-    // ✅ Add new fields that don’t have an _id
-    schema.forEach(field => {
-      if (!field._id) {
-        updatedSchema.push({ _id: new mongoose.Types.ObjectId(), ...field });
-      }
-    });
+    const updatedSchema = schema.map(field =>
+      field._id && existingSchemaMap.has(field._id)
+        ? { ...existingSchemaMap.get(field._id), fieldName: field.fieldName, fieldType: field.fieldType }
+        : { _id: new mongoose.Types.ObjectId(), ...field }
+    );
 
     api.schema = updatedSchema;
-
-    // ✅ Update entries if provided
-    if (entries !== undefined) {
-      api.entries = entries;
-    }
+    if (entries !== undefined) api.entries = entries;
 
     await api.save();
     res.json({ success: true, message: "Schema updated successfully", schema: api.schema });
@@ -179,17 +131,14 @@ export const editSchema = async (req, res) => {
   }
 };
 
+// ✅ Serve Fake Data
 export const serveFakeData = async (req, res) => {
   try {
     const { apiId } = req.params;
     const api = await API.findById(apiId);
-
     if (!api) return res.status(404).json({ success: false, message: "API not found" });
 
-    // ✅ Pass both `entries` and `schema` to generateFakeData
-    const fakeData = generateFakeData({ entries: api.entries, schema: api.schema });
-
-    res.json(fakeData);
+    res.json(generateFakeData({ entries: api.entries, schema: api.schema }));
   } catch (error) {
     handleError(res, "Error generating data", error);
   }

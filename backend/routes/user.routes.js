@@ -4,10 +4,10 @@ import { getAllUsers, getUsersByClerkId } from "../controllers/user.controller.j
 
 const router = express.Router();
 
-// Get all users (Requires authentication)
-router.get("/", requireAuth(), getAllUsers);
+// Get all users in the database
+router.get("/", getAllUsers);
 
-// Get a user by Clerk ID (Requires authentication)
-router.get("/:clerkUserId", requireAuth(), getUsersByClerkId);
+// Get a user by Clerk ID
+router.get("/:clerkUserId", getUsersByClerkId);
 
 export default router;

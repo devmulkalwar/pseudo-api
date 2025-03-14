@@ -15,7 +15,7 @@ export const getAllUsers = async (req, res) => {
 export const getUsersByClerkId = async (req, res) => {
   try {
     const { clerkUserId } = req.params;
-
+    console.log(clerkUserId);
     const user = await User.findOne({ clerkUserId }, "-__v -createdAt -updatedAt");
 
     if (!user) {

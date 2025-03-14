@@ -11,17 +11,30 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Plus, Trash2, Check, ChevronRight, Clipboard } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Plus,
+  Trash2,
+  Check,
+  ChevronRight,
+  Clipboard,
+  RefreshCw,
+  CheckCircle,
+  SkipBackIcon,
+  ChevronLeft,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { fakerTypes } from "@/data/fakerTypes";
 import { Switch } from "@/components/ui/switch";
 import { faker } from "@faker-js/faker";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import CodeBlock from "@/components/CodeBlock";
 
 const CreateApi = () => {
   const [step, setStep] = useState(1);
@@ -29,7 +42,7 @@ const CreateApi = () => {
     { id: 1, name: "", type: "name.firstName" },
   ]);
   const [apiDetails, setApiDetails] = useState({
-    isPublic: false,
+    isPublic: true,
     name: "",
     description: "",
     tags: [],
@@ -64,7 +77,7 @@ const CreateApi = () => {
 
   const generateEndpoint = () => {
     const endpointId = Math.random().toString(36).substr(2, 9);
-    setGeneratedEndpoint(`https://pseudoapi.com/api/${endpointId}`);
+    setGeneratedEndpoint(`${import.meta.env.VITE_SERVER_URL}/pseudoapi/${endpointId}`);
     setShowDialog(true);
   };
 
@@ -77,9 +90,9 @@ const CreateApi = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
+    <div className="container max-w-4xl mx-auto py-6 px-4 sm:px-6 space-y-8">
       {/* Step Indicator */}
-      <div className="flex items-center gap-2 text-muted-foreground">
+      <div className="flex items-center justify-center sm:justify-start gap-2 text-muted-foreground mb-6">
         <div
           className={`flex items-center gap-2 ${
             step >= 1 ? "text-primary" : ""
@@ -88,7 +101,7 @@ const CreateApi = () => {
           <span className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
             {step === 1 ? "1" : <Check className="h-4 w-4" />}
           </span>
-          <span>API Configuration</span>
+          <span className="text-sm sm:text-base">API Configuration</span>
         </div>
 
         <ChevronRight className="h-4 w-4" />
@@ -101,156 +114,151 @@ const CreateApi = () => {
           <span className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
             2
           </span>
-          <span>Define Structure</span>
+          <span className="text-sm sm:text-base">Define Structure</span>
         </div>
       </div>
 
       {step === 1 ? (
-        <div className="space-y-8 w-full">
-          <Card className="p-6 space-y-6 w-full">
-            <div className="space-y-4">
-              {/* API Visibility Toggle */}
-              <div className="flex justify-between items-center space-x-2">
-                <Label htmlFor="api-visibility">API Visibility</Label>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="api-visibility"
-                    checked={apiDetails.isPublic}
-                    onCheckedChange={(checked) =>
-                      setApiDetails({ ...apiDetails, isPublic: checked })
-                    }
-                  />
-                  <Label htmlFor="api-visibility" className="text-sm">
-                    {apiDetails.isPublic ? "Public" : "Private"}
-                  </Label>
-                </div>
+        <Card className="w-full">
+          <CardHeader className="flex flex-row justify-between items-center">
+            <CardTitle className="text-lg sm:text-xl">API Details</CardTitle>
+            <div className="flex items-center gap-2">
+              <Switch
+                id="api-visibility"
+                checked={apiDetails.isPublic}
+                onCheckedChange={(checked) =>
+                  setApiDetails({ ...apiDetails, isPublic: checked })
+                }
+              />
+              <Label htmlFor="api-visibility" className="text-sm">
+                {apiDetails.isPublic ? "Public" : "Private"}
+              </Label>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name">API Name *</Label>
+              <Input
+                id="name"
+                placeholder="e.g., User Profile API"
+                value={apiDetails.name}
+                onChange={(e) =>
+                  setApiDetails({ ...apiDetails, name: e.target.value })
+                }
+              />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Describe your API (optional)"
+                value={apiDetails.description}
+                onChange={(e) =>
+                  setApiDetails({
+                    ...apiDetails,
+                    description: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            {/* Tags */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-medium">Tags</label>
+                <span className="text-xs text-muted-foreground">
+                  {apiDetails.tags.length}/5
+                </span>
               </div>
 
-              {/* API Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name">API Name *</Label>
-                <Input
-                  id="name"
-                  placeholder="e.g., User Profile API"
-                  value={apiDetails.name}
-                  onChange={(e) =>
-                    setApiDetails({ ...apiDetails, name: e.target.value })
-                  }
-                />
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Describe your API (optional)"
-                  value={apiDetails.description}
-                  onChange={(e) =>
-                    setApiDetails({
-                      ...apiDetails,
-                      description: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              {/* Tags */}
-              <div className="space-y-2">
-                <Label>Tags (max 5)</Label>
-                <div className="flex flex-wrap gap-2 border rounded p-2 w-full max-h-32 overflow-y-auto">
-                  {apiDetails.tags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="flex items-center gap-1"
-                    >
-                      {tag}
-                      <Trash2
-                        className="h-3 w-3 cursor-pointer"
-                        onClick={() =>
-                          setApiDetails({
-                            ...apiDetails,
-                            tags: apiDetails.tags.filter((t) => t !== tag),
-                          })
-                        }
-                      />
-                    </Badge>
-                  ))}
-                  {apiDetails.tags.length < 5 && (
-                    <Input
-                      className="w-48 h-8 flex-shrink-0"
-                      placeholder="Add tags (press enter)"
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter" && e.target.value) {
-                          handleAddTag(e.target.value);
-                          e.target.value = "";
-                        }
-                      }}
+              <div className="flex flex-wrap gap-2 border rounded-md p-3 w-full max-h-32 overflow-y-auto bg-muted/10">
+                {apiDetails.tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="flex items-center gap-2 px-3 py-1 rounded-md"
+                  >
+                    {tag}
+                    <Trash2
+                      className="h-4 w-4 cursor-pointer hover:text-destructive transition"
+                      onClick={() => handleRemoveTag(tag)}
                     />
-                  )}
-                </div>
-                {apiDetails.tags.length >= 5 && (
-                  <p className="text-xs text-muted-foreground">
-                    Maximum 5 tags reached
-                  </p>
+                  </Badge>
+                ))}
+
+                {apiDetails.tags.length < 5 && (
+                  <Input
+                    className="w-full sm:w-48 h-9 flex-shrink-0 border-none focus-visible:ring-0 bg-transparent text-sm placeholder:text-muted-foreground"
+                    placeholder="Add tag (press enter)"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter" && e.target.value.trim()) {
+                        handleAddTag(e.target.value.trim());
+                        e.target.value = "";
+                      }
+                    }}
+                  />
                 )}
               </div>
             </div>
 
             <Button
-              className="w-full"
+              className="w-full mt-4"
               onClick={() => setStep(2)}
               disabled={!apiDetails.name}
             >
               Continue to Structure
             </Button>
-          </Card>
-        </div>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="space-y-8 w-full">
-          <Card className="p-6 space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">API Fields</h3>
-                <Button variant="outline" onClick={addField}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Field
-                </Button>
-              </div>
+        <Card>
+          {/* API Fields Section */}
 
-              <div className="space-y-2 border p-4 rounded-lg bg-muted/10">
-                <div className="flex items-center gap-4">
-                  <Input value="id" disabled className="flex-1" />
-                  <Input
-                    value="Auto-generated UUID"
-                    disabled
-                    className="flex-1"
-                  />
-                  <div className="w-32">
-                    <Badge
-                      variant="secondary"
-                      className="w-full justify-center"
-                    >
-                      Required
-                    </Badge>
-                  </div>
+          <CardHeader className="flex flex-row justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={() => setStep(1)}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <CardTitle className="text-lg sm:text-xl">API Fields</CardTitle>
+            </div>
+            <Button
+              variant="outline"
+              onClick={addField}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Field</span>
+            </Button>
+          </CardHeader>
+
+          <CardContent className="space-y-6">
+            {/* Required ID Field */}
+            <div className="rounded-lg border bg-muted/10 p-3">
+              <div className="grid grid-cols-2 gap-2">
+                <Input value="id" disabled />
+                <div className="flex items-center gap-2">
+                  <Input value="Auto-generated UUID" disabled />
+                  <CheckCircle className="h-5 w-5 text-green-500" />
                 </div>
               </div>
+            </div>
 
+            {/* Dynamic Fields */}
+            <div className="space-y-4">
               {fields.map((field, index) => (
-                <div key={field.id} className="space-y-2">
-                  <div className="flex items-center gap-4">
-                    <Input
-                      placeholder="Field name"
-                      value={field.name}
-                      onChange={(e) => {
-                        const newFields = [...fields];
-                        newFields[index].name = e.target.value;
-                        setFields(newFields);
-                      }}
-                      className="flex-1"
-                    />
+                <div key={field.id} className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Field name"
+                    value={field.name}
+                    onChange={(e) => {
+                      const newFields = [...fields];
+                      newFields[index].name = e.target.value;
+                      setFields(newFields);
+                    }}
+                  />
+                  <div className="flex items-center gap-2">
                     <Select
                       value={field.type}
                       onValueChange={(value) => {
@@ -259,12 +267,16 @@ const CreateApi = () => {
                         setFields(newFields);
                       }}
                     >
-                      <SelectTrigger className="w-[240px]">
+                      <SelectTrigger>
                         <SelectValue placeholder="Select data type" />
                       </SelectTrigger>
                       <SelectContent>
                         {fakerTypes.map((type) => (
-                          <SelectItem key={type} value={type}>
+                          <SelectItem
+                            key={type}
+                            value={type}
+                            className="text-sm"
+                          >
                             {type}
                           </SelectItem>
                         ))}
@@ -282,54 +294,79 @@ const CreateApi = () => {
               ))}
             </div>
 
-            <div className="space-y-4">
-              <Label>Number of Entries *</Label>
+            {/* Entries Input */}
+            <div className="space-y-2">
+              <Label>Number of Entries</Label>
               <Input
                 type="number"
                 value={entries}
-                onChange={(e) => setEntries(e.target.value)}
+                onChange={(e) =>
+                  setEntries(
+                    Math.min(1000, Math.max(1, Number(e.target.value)))
+                  )
+                }
                 min="1"
                 max="1000"
+                className="w-full sm:w-32"
               />
+              <p className="text-xs text-muted-foreground">
+                Maximum: 1000 entries
+              </p>
             </div>
-          </Card>
+          
 
-          <Card className="p-6 w-full">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Data Preview</h3>
-              <Button variant="ghost" size="sm">
-                Refresh Preview
-              </Button>
-            </div>
-            <pre className="bg-muted/10 p-4 rounded-lg text-sm overflow-x-auto">
-              {JSON.stringify(generateFakeData(), null, 2)}
-            </pre>
-          </Card>
+          {/* Data Preview Section */}
+          
+            <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
+              <CardTitle className="text-lg sm:text-xl">Data Preview</CardTitle>
+            </CardHeader>
+            
+              <CodeBlock
+                code={JSON.stringify(
+                  [generateFakeData(), generateFakeData(), generateFakeData()],
+                  null,
+                  2
+                )}
+                className="text-sm"
+              />
+           
+          
 
-          <Button className="w-full" onClick={generateEndpoint}>
+          {/* Action Buttons */}
+
+          <Button
+            className="w-full sm:flex-1 order-1 sm:order-2"
+            onClick={generateEndpoint}
+          >
             Generate API
           </Button>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>API Created Successfully!</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 p-3 bg-muted/10 rounded-lg">
-              <code className="flex-1">{generatedEndpoint}</code>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+              <code className="flex-1 text-xs sm:text-sm overflow-x-auto whitespace-nowrap">
+                {generatedEndpoint}
+              </code>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigator.clipboard.writeText(generatedEndpoint)}
+                title="Copy to clipboard"
               >
                 <Clipboard className="h-4 w-4" />
               </Button>
             </div>
-            <Button className="w-full">View API Documentation</Button>
           </div>
+          <DialogFooter>
+            <Button className="w-full">View API Documentation</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

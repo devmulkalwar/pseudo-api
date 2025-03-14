@@ -42,12 +42,12 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")).render(
-  <GlobalProvider>
-    <ClerkProvider publishableKey={clerkPubKey}>
+  <ClerkProvider publishableKey={clerkPubKey}>
+    <GlobalProvider>
       <RouterProvider
         router={router}
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       />
-    </ClerkProvider>
-  </GlobalProvider>
+    </GlobalProvider>
+  </ClerkProvider>
 );

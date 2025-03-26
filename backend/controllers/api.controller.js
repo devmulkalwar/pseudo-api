@@ -8,26 +8,65 @@ const handleError = (res, message, error = null) => {
   return res.status(500).json({ success: false, message, error });
 };
 
-// ✅ Create API
 export const createApi = async (req, res) => {
   try {
-    const { owner, name, description, isPublic, tags, starredBy } = req.body;
+    const {
+      owner,
+      name,
+      description,
+      isPublic,
+      tags,
+      ownerClerkId,
+    } = req.body;
 
-    if (!owner || !name) return res.status(400).json({ success: false, message: "Owner and Name are required" });
+    console.log("Request received:", req.body);
 
-    const existingApi = await API.findOne({ name });
-    if (existingApi) return res.status(400).json({ success: false, message: "API with this name already exists" });
+    if (!owner || !name || !ownerClerkId) {
+      return res.status(400).json({
+        success: false,
+        message: "Owner, Name, and ownerClerkId are required",
+      });
+    }
 
-    const formattedTags = tags?.map(tag => String(tag)) || [];
-    const formattedStarredBy = starredBy?.map(id => new mongoose.Types.ObjectId(id)) || [];
-
-    const newApi = new API({ owner, name, description, isPublic, tags: formattedTags, starredBy: formattedStarredBy });
+    // Create the API with required fields only
+    const newApi = new API({
+      owner,
+      ownerClerkId,
+      name,
+      description: description || "",
+      isPublic: isPublic ?? true,
+    });
+    
+    // Set the endpoint
     newApi.endpoint = `/api/${newApi._id}`;
-
+    
+    console.log("Saving API:", newApi);
     await newApi.save();
-    res.json({ success: true, apiUrl: `http://localhost:3000${newApi.endpoint}` });
+    
+    // Add the arrays after initial save using direct MongoDB update
+    // This avoids the mongoose validation issues
+    await API.collection.updateOne(
+      { _id: newApi._id },
+      { 
+        $set: { 
+          tags: Array.isArray(tags) ? tags : [],
+          starredBy: []
+        } 
+      }
+    );
+
+    res.status(201).json({
+      success: true,
+      apiUrl: `${process.env.SERVER_URL}${newApi.endpoint}`,
+      apiId: newApi._id,
+    });
   } catch (error) {
-    handleError(res, "Error creating API", error);
+    console.error("Error Creating API:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error Creating API",
+      error,
+    });
   }
 };
 
@@ -38,7 +77,8 @@ export const editApi = async (req, res) => {
     const updates = req.body;
 
     const api = await API.findByIdAndUpdate(apiId, updates, { new: true });
-    if (!api) return res.status(404).json({ success: false, message: "API not found" });
+    if (!api)
+      return res.status(404).json({ success: false, message: "API not found" });
 
     res.json({ success: true, message: "API updated successfully", api });
   } catch (error) {
@@ -52,7 +92,8 @@ export const deleteApi = async (req, res) => {
     const { apiId } = req.params;
 
     const api = await API.findByIdAndDelete(apiId);
-    if (!api) return res.status(404).json({ success: false, message: "API not found" });
+    if (!api)
+      return res.status(404).json({ success: false, message: "API not found" });
 
     res.json({ success: true, message: "API deleted successfully" });
   } catch (error) {
@@ -67,17 +108,33 @@ export const defineSchema = async (req, res) => {
     const { schema, entries } = req.body;
 
     if (!Array.isArray(schema) || schema.length === 0) {
-      return res.status(400).json({ success: false, message: "Schema must be a non-empty array" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Schema must be a non-empty array" });
     }
 
-    if (schema.some(field => !field.fieldName || !field.fieldType)) {
-      return res.status(400).json({ success: false, message: "Each field must have 'fieldName' and 'fieldType'" });
+    if (schema.some((field) => !field.fieldName || !field.fieldType)) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Each field must have 'fieldName' and 'fieldType'",
+        });
     }
 
-    const api = await API.findByIdAndUpdate(apiId, { schema, entries }, { new: true });
-    if (!api) return res.status(404).json({ success: false, message: "API not found" });
+    const api = await API.findByIdAndUpdate(
+      apiId,
+      { schema, entries },
+      { new: true }
+    );
+    if (!api)
+      return res.status(404).json({ success: false, message: "API not found" });
 
-    res.json({ success: true, message: "Schema updated successfully", schema: api.schema });
+    res.json({
+      success: true,
+      message: "Schema updated successfully",
+      schema: api.schema,
+    });
   } catch (error) {
     handleError(res, "Error updating schema", error);
   }
@@ -88,7 +145,8 @@ export const getSchema = async (req, res) => {
   try {
     const { apiId } = req.params;
     const api = await API.findById(apiId);
-    if (!api) return res.status(404).json({ success: false, message: "API not found" });
+    if (!api)
+      return res.status(404).json({ success: false, message: "API not found" });
 
     res.json({ success: true, schema: api.schema, entries: api.entries });
   } catch (error) {
@@ -103,29 +161,55 @@ export const editSchema = async (req, res) => {
     const { schema, entries } = req.body;
 
     if (!Array.isArray(schema) || schema.length === 0) {
-      return res.status(400).json({ success: false, message: "Schema must be a non-empty array" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Schema must be a non-empty array" });
     }
 
-    if (schema.some(field => !field.fieldName || !field.fieldType)) {
-      return res.status(400).json({ success: false, message: "Each field must have 'fieldName' and 'fieldType'" });
+    if (schema.some((field) => !field.fieldName || !field.fieldType)) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Each field must have 'fieldName' and 'fieldType'",
+        });
     }
 
+    // First get the API
     const api = await API.findById(apiId);
-    if (!api) return res.status(404).json({ success: false, message: "API not found" });
+    if (!api)
+      return res.status(404).json({ success: false, message: "API not found" });
 
-    const existingSchemaMap = new Map(api.schema.map(field => [field._id.toString(), field]));
+    const existingSchemaMap = new Map(
+      api.schema.map((field) => [field._id.toString(), field])
+    );
 
-    const updatedSchema = schema.map(field =>
+    const updatedSchema = schema.map((field) =>
       field._id && existingSchemaMap.has(field._id)
-        ? { ...existingSchemaMap.get(field._id), fieldName: field.fieldName, fieldType: field.fieldType }
+        ? {
+            ...existingSchemaMap.get(field._id),
+            fieldName: field.fieldName,
+            fieldType: field.fieldType,
+          }
         : { _id: new mongoose.Types.ObjectId(), ...field }
     );
 
-    api.schema = updatedSchema;
-    if (entries !== undefined) api.entries = entries;
+    // Update using direct MongoDB update to avoid Mongoose validation issues
+    await API.collection.updateOne(
+      { _id: api._id },
+      { 
+        $set: { 
+          schema: updatedSchema,
+          entries: entries !== undefined ? entries : api.entries
+        } 
+      }
+    );
 
-    await api.save();
-    res.json({ success: true, message: "Schema updated successfully", schema: api.schema });
+    res.json({
+      success: true,
+      message: "Schema updated successfully",
+      schema: updatedSchema,
+    });
   } catch (error) {
     handleError(res, "Error editing schema", error);
   }
@@ -136,7 +220,8 @@ export const serveFakeData = async (req, res) => {
   try {
     const { apiId } = req.params;
     const api = await API.findById(apiId);
-    if (!api) return res.status(404).json({ success: false, message: "API not found" });
+    if (!api)
+      return res.status(404).json({ success: false, message: "API not found" });
 
     res.json(generateFakeData({ entries: api.entries, schema: api.schema }));
   } catch (error) {

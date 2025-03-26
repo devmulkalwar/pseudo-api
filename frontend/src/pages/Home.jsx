@@ -1,13 +1,27 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { RocketIcon, ServerIcon, CodeIcon, Share2Icon, StarIcon, ClipboardIcon, CheckIcon } from "lucide-react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import {
+  RocketIcon,
+  ServerIcon,
+  CodeIcon,
+  Share2Icon,
+  StarIcon,
+  ClipboardIcon,
+  CheckIcon,
+  BookOpen,
+} from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Link } from "react-router-dom";
 import CodeBlock from "@/components/CodeBlock";
-
-
 
 const Home = () => {
   return (
@@ -18,8 +32,8 @@ const Home = () => {
           Generate Fake APIs in Seconds
         </h1>
         <p className="max-w-2xl text-muted-foreground md:text-lg">
-          Create mock REST APIs instantly with realistic data using Faker.js. Perfect for prototyping, 
-          testing, and demo applications.
+          Create mock REST APIs instantly with realistic data using Faker.js.
+          Perfect for prototyping, testing, and demo applications.
         </p>
         <Button size="lg" className="gap-2">
           <RocketIcon className="h-4 w-4" />
@@ -33,7 +47,9 @@ const Home = () => {
           <CardHeader className="space-y-2">
             <ServerIcon className="h-8 w-8 text-primary" />
             <CardTitle>Instant Mock APIs</CardTitle>
-            <CardDescription>Generate endpoints with custom data structures</CardDescription>
+            <CardDescription>
+              Generate endpoints with custom data structures
+            </CardDescription>
           </CardHeader>
         </Card>
 
@@ -41,7 +57,9 @@ const Home = () => {
           <CardHeader className="space-y-2">
             <CodeIcon className="h-8 w-8 text-primary" />
             <CardTitle>Realistic Data</CardTitle>
-            <CardDescription>Names, emails, addresses, and 50+ data types</CardDescription>
+            <CardDescription>
+              Names, emails, addresses, and 50+ data types
+            </CardDescription>
           </CardHeader>
         </Card>
 
@@ -49,7 +67,9 @@ const Home = () => {
           <CardHeader className="space-y-2">
             <Share2Icon className="h-8 w-8 text-primary" />
             <CardTitle>Share & Collaborate</CardTitle>
-            <CardDescription>Publish APIs and collect community ratings</CardDescription>
+            <CardDescription>
+              Publish APIs and collect community ratings
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -88,11 +108,16 @@ const Home = () => {
         <Card className="h-full hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle>Start Building</CardTitle>
-            <CardDescription>Create your first mock API in 30 seconds</CardDescription>
+            <CardDescription>
+              Create your first mock API in 30 seconds
+            </CardDescription>
           </CardHeader>
           <CardFooter>
-            <Button variant="outline" className="w-full gap-2">
-              Create API
+          <Button asChild variant="outline" className="w-full">
+              <Link to="/create-api">
+                <BookOpen className="h-4 w-4" />
+                View Docs
+              </Link>
             </Button>
           </CardFooter>
         </Card>
@@ -103,9 +128,11 @@ const Home = () => {
             <CardDescription>Discover community-created APIs</CardDescription>
           </CardHeader>
           <CardFooter>
-            <Button variant="outline" className="w-full gap-2">
-              <StarIcon className="h-4 w-4" />
-              Browse Popular
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/explore">
+                <StarIcon className="h-4 w-4" />
+                Popular APIs
+              </Link>
             </Button>
           </CardFooter>
         </Card>
@@ -117,7 +144,10 @@ const Home = () => {
           </CardHeader>
           <CardFooter>
             <Button asChild variant="outline" className="w-full">
-              <Link to="/docs">View Docs</Link>
+              <Link to="/docs">
+                <BookOpen className="h-4 w-4" />
+                View Docs
+              </Link>
             </Button>
           </CardFooter>
         </Card>

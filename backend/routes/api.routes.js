@@ -5,7 +5,7 @@ import { requireAuth } from "@clerk/express";
 const router = express.Router();
 
 // ✅ Create API
-router.post("/create",requireAuth(),createApi);
+router.post("/create",createApi);
 
 // ✅ Edit API
 router.put("/:apiId/edit",requireAuth(),editApi);

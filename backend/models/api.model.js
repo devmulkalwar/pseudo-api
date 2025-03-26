@@ -7,10 +7,13 @@ const apiSchema = new Schema(
       ref: "User",
       required: true,
     },
+    ownerClerkId: {
+      type: String,
+      required: true,
+    },
     name: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
     },
     description: {
@@ -34,15 +37,7 @@ const apiSchema = new Schema(
     isPublic: {
       type: Boolean,
       default: true,
-    },
-    starredBy: {
-      type: [{ type: Schema.Types.ObjectId, ref: "User" }],
-      default: undefined, // ✅ Fix: Prevents Mongoose from treating `[]` incorrectly
-    },
-    tags: {
-      type: [{ type: String, trim: true }],
-      default: undefined, // ✅ Fix: Prevents validation errors on empty arrays
-    },
+    }
   },
   { timestamps: true }
 );

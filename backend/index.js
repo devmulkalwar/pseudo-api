@@ -12,15 +12,9 @@ dotenv.config();
 
 const app = express();
 connectDB();
-// Middleware
-app.use("/api/pseudoapi/:apiId", cors({ origin: "*", credentials: true }));
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
-app.use("/webhooks", webhookRouter);
-app.use(clerkMiddleware());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// CORS Headers
+// Global CORS middleware
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -30,14 +24,26 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
+// Apply Clerk middleware for authentication (applies to all routes defined after)
+app.use(clerkMiddleware());
 
+// Parse URL-encoded bodies
+app.use(express.urlencoded({ extended: true }));
+
+// Webhook routes (if they need URL-encoded parsing, they should be defined separately)
+app.use("/webhooks", webhookRouter);
+
+// Global JSON parsing for all other routes
+app.use(express.json());
+
+// Mount routes
 app.use("/api/users", userRouter);
-app.use("/api/pseudoapi",apiRouter);
+app.use("/api/pseudoapi", apiRouter); 
 
-app.get("/",(req,res)=>{
+// Home Route (fallback)
+app.get("/", (req, res) => {
   res.send("Hello World");
-})
+});
 
 // Error handling middleware
 app.use((error, req, res, next) => {

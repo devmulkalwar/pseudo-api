@@ -1,81 +1,116 @@
-import React, { useState, useEffect } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/tabs";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  Star, ChevronRight, BookPlus, PlusIcon, PencilIcon, 
-  BarChart, Share2, Bookmark, Copy, ExternalLink, Trash,
-  Twitter, Github, Globe, Search, Filter
+import {
+  Star,
+  ChevronRight,
+  BookPlus,
+  PlusIcon,
+  PencilIcon,
+  BarChart,
+  Share2,
+  Bookmark,
+  Copy,
+  ExternalLink,
+  Trash,
+  Twitter,
+  Github,
+  Globe,
+  Search,
+  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [filterText, setFilterText] = useState("");
-  
+
   const createdAPIs = [
-    { 
-      id: 1, 
-      name: "User API", 
-      description: "Mock user data with authentication and customizable user profiles for testing authentication flows",
+    {
+      id: 1,
+      name: "User API",
+      description:
+        "Mock user data with authentication and customizable user profiles for testing authentication flows",
       stars: 45,
       type: "REST",
       status: "Active",
       rateLimit: "Premium",
       created: "Jan 15, 2025",
-      endpoint: "/api/users"
+      endpoint: "/api/users",
     },
-    { 
-      id: 2, 
-      name: "E-commerce API", 
-      description: "Product listings, inventory management, and order processing for testing e-commerce applications",
+    {
+      id: 2,
+      name: "E-commerce API",
+      description:
+        "Product listings, inventory management, and order processing for testing e-commerce applications",
       stars: 32,
       type: "GraphQL",
       status: "Active",
       rateLimit: "Free",
       created: "Feb 2, 2025",
-      endpoint: "/api/products"
+      endpoint: "/api/products",
     },
-    { 
-      id: 3, 
-      name: "Blog API", 
-      description: "Content management system with authors, categories, and comments for testing blog applications",
+    {
+      id: 3,
+      name: "Blog API",
+      description:
+        "Content management system with authors, categories, and comments for testing blog applications",
       stars: 28,
       type: "REST",
       status: "Deprecated",
       rateLimit: "Free",
       created: "Dec 10, 2024",
-      endpoint: "/api/blog"
+      endpoint: "/api/blog",
     },
   ];
 
   const starredAPIs = [
-    { 
-      id: 4, 
-      name: "Weather API", 
-      description: "Global weather data with forecast and historical data for testing weather applications",
+    {
+      id: 4,
+      name: "Weather API",
+      description:
+        "Global weather data with forecast and historical data for testing weather applications",
       stars: 120,
       type: "REST",
       status: "Active",
       rateLimit: "Premium",
       creator: "@weather_dev",
       created: "Nov 5, 2024",
-      endpoint: "/api/weather"
+      endpoint: "/api/weather",
     },
-    { 
-      id: 5, 
-      name: "Payment API", 
-      description: "Payment gateway simulation with transaction history and multiple payment methods",
+    {
+      id: 5,
+      name: "Payment API",
+      description:
+        "Payment gateway simulation with transaction history and multiple payment methods",
       stars: 98,
       type: "GraphQL",
       status: "Active",
       rateLimit: "Premium",
       creator: "@fintech_pro",
       created: "Jan 22, 2025",
-      endpoint: "/api/payments"
+      endpoint: "/api/payments",
     },
   ];
 
@@ -89,21 +124,23 @@ const Profile = () => {
   const socialLinks = [
     { icon: Twitter, href: "#", label: "Twitter" },
     { icon: Github, href: "#", label: "GitHub" },
-    { icon: Globe, href: "#", label: "Website" }
+    { icon: Globe, href: "#", label: "Website" },
   ];
 
-  const filteredCreatedAPIs = createdAPIs.filter(api => 
-    api.name.toLowerCase().includes(filterText.toLowerCase()) || 
-    api.description.toLowerCase().includes(filterText.toLowerCase())
+  const filteredCreatedAPIs = createdAPIs.filter(
+    (api) =>
+      api.name.toLowerCase().includes(filterText.toLowerCase()) ||
+      api.description.toLowerCase().includes(filterText.toLowerCase())
   );
 
-  const filteredStarredAPIs = starredAPIs.filter(api => 
-    api.name.toLowerCase().includes(filterText.toLowerCase()) || 
-    api.description.toLowerCase().includes(filterText.toLowerCase())
+  const filteredStarredAPIs = starredAPIs.filter(
+    (api) =>
+      api.name.toLowerCase().includes(filterText.toLowerCase()) ||
+      api.description.toLowerCase().includes(filterText.toLowerCase())
   );
 
   const APICard = ({ api, isOwner = false }) => (
-    <Card className="hover:shadow-lg transition-all duration-300 group overflow-hidden border-t-4 border-t-blue-500 dark:border-t-blue-400">
+    <Card className="hover:shadow-lg transition-shadow duration-300 border-t-4 border-t-primary">
       <CardHeader className="pb-2 relative">
         <div className="flex justify-between items-start">
           <div>
@@ -113,17 +150,31 @@ const Profile = () => {
                 {api.status}
               </Badge>
             </div>
-            {!isOwner && (
-              <div className="text-xs text-muted-foreground mt-1">
+            {!isOwner && api.creator && (
+              <p className="text-xs text-muted-foreground mt-1">
                 By {api.creator}
-              </div>
+              </p>
             )}
           </div>
           <div className="flex items-center space-x-1">
-            <Badge variant="outline" className={`text-xs ${api.type === "GraphQL" ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"}`}>
+            <Badge
+              variant="outline"
+              className={`text-xs ${
+                api.type === "GraphQL"
+                  ? "bg-secondary text-secondary-foreground"
+                  : "bg-accent text-accent-foreground"
+              }`}
+            >
               {api.type}
             </Badge>
-            <Badge variant="outline" className={`text-xs ${api.rateLimit === "Premium" ? "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200" : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"}`}>
+            <Badge
+              variant="outline"
+              className={`text-xs ${
+                api.rateLimit === "Premium"
+                  ? "bg-warning text-warning-foreground"
+                  : "bg-info text-info-foreground"
+              }`}
+            >
               {api.rateLimit}
             </Badge>
           </div>
@@ -140,7 +191,7 @@ const Profile = () => {
                     <Button variant="ghost" size="icon" className="h-7 w-7">
                       <PencilIcon className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive">
                       <Trash className="h-4 w-4" />
                     </Button>
                   </>
@@ -158,9 +209,7 @@ const Profile = () => {
         </TooltipProvider>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="mt-2 text-xs text-muted-foreground">
-          Created: {api.created}
-        </div>
+        <p className="mt-2 text-xs text-muted-foreground">Created: {api.created}</p>
         <div className="mt-1 text-xs font-mono bg-muted p-1 rounded flex items-center justify-between">
           <code className="truncate">{api.endpoint}</code>
           <TooltipProvider>
@@ -181,9 +230,13 @@ const Profile = () => {
         <div className="flex items-center gap-2 text-sm">
           <div className="flex items-center">
             {[...Array(5)].map((_, i) => (
-              <Star 
-                key={i} 
-                className={`h-4 w-4 ${i < Math.round(api.stars/20) ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground"}`} 
+              <Star
+                key={i}
+                className={`h-4 w-4 ${
+                  i < Math.round(api.stars / 20)
+                    ? "text-yellow-500"
+                    : "text-muted-foreground"
+                }`}
               />
             ))}
           </div>
@@ -239,15 +292,11 @@ const Profile = () => {
   return (
     <div className="container mx-auto p-4 space-y-6 max-w-6xl">
       {/* Profile Header */}
-      <div className="flex flex-col md:flex-row items-center gap-8 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full opacity-20 blur-md"></div>
-          <Avatar className="h-32 w-32 border-4 border-white dark:border-gray-800 relative z-10 shadow-lg">
-            <AvatarImage src="/api/placeholder/128/128" />
-            <AvatarFallback className="text-4xl font-mono bg-gradient-to-br from-blue-500 to-purple-600 text-white">PA</AvatarFallback>
-          </Avatar>
-        </div>
-
+      <div className="flex flex-col md:flex-row items-center gap-8 bg-background p-6 rounded-xl shadow-sm">
+        <Avatar className="h-32 w-32 border" >
+          <AvatarImage src="/api/placeholder/128/128" />
+          <AvatarFallback className="text-4xl font-mono">PA</AvatarFallback>
+        </Avatar>
         <div className="flex-1 space-y-4 text-center md:text-left">
           <div>
             <h1 className="text-3xl font-bold font-mono">@pseudoapi_dev</h1>
@@ -268,30 +317,27 @@ const Profile = () => {
               ))}
             </div>
           </div>
-          
           {/* Stats Row */}
           <div className="grid grid-cols-3 gap-4 max-w-md">
-            <div className="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg transform transition-transform hover:scale-105">
+            <div className="p-3 rounded-lg hover:scale-105 transition-transform">
               <p className="text-2xl font-bold">{createdAPIs.length}</p>
-              <p className="text-muted-foreground text-sm">Created APIs</p>
+              <p className="text-sm text-muted-foreground">Created APIs</p>
             </div>
-            <div className="bg-purple-50 dark:bg-purple-900/30 p-3 rounded-lg transform transition-transform hover:scale-105">
+            <div className="p-3 rounded-lg hover:scale-105 transition-transform">
               <p className="text-2xl font-bold">1.2k</p>
-              <p className="text-muted-foreground text-sm">Total Stars</p>
+              <p className="text-sm text-muted-foreground">Total Stars</p>
             </div>
-            <div className="bg-green-50 dark:bg-green-900/30 p-3 rounded-lg transform transition-transform hover:scale-105">
+            <div className="p-3 rounded-lg hover:scale-105 transition-transform">
               <p className="text-2xl font-bold">{starredAPIs.length}</p>
-              <p className="text-muted-foreground text-sm">Starred APIs</p>
+              <p className="text-sm text-muted-foreground">Starred APIs</p>
             </div>
           </div>
-
           {/* Bio */}
           <p className="text-muted-foreground max-w-prose">
             Building mock APIs for better testing experiences. Passionate about developer tools and API design.
           </p>
-
           <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
-            <Button className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white">
+            <Button className="gap-2">
               <PlusIcon className="h-4 w-4" />
               Create New API
             </Button>
@@ -311,11 +357,11 @@ const Profile = () => {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search APIs..." 
-            className="pl-10" 
-            value={filterText} 
-            onChange={(e) => setFilterText(e.target.value)} 
+          <Input
+            placeholder="Search APIs..."
+            className="pl-10"
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
           />
         </div>
         <div className="flex gap-4">
@@ -341,22 +387,23 @@ const Profile = () => {
 
       {/* Tabs Section */}
       <Tabs defaultValue="created" className="w-full">
-        <TabsList className="w-full grid grid-cols-2 bg-muted/50">
-          <TabsTrigger value="created" className="gap-2 py-4 data-[state=active]:bg-background">
+        <TabsList className="w-full grid grid-cols-2 bg-muted">
+          <TabsTrigger value="created" className="gap-2 py-4">
             <BookPlus className="h-5 w-5" />
             Created APIs ({createdAPIs.length})
           </TabsTrigger>
-          <TabsTrigger value="starred" className="gap-2 py-4 data-[state=active]:bg-background">
+          <TabsTrigger value="starred" className="gap-2 py-4">
             <Bookmark className="h-5 w-5" />
             Starred APIs ({starredAPIs.length})
           </TabsTrigger>
         </TabsList>
-
         {/* Created APIs Content */}
         <TabsContent value="created">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
             {loading ? (
-              Array(3).fill(0).map((_, i) => <SkeletonCard key={i} />)
+              Array(3)
+                .fill(0)
+                .map((_, i) => <SkeletonCard key={i} />)
             ) : filteredCreatedAPIs.length === 0 ? (
               <div className="col-span-full text-center py-12 space-y-4 text-muted-foreground">
                 <BookPlus className="h-12 w-12 mx-auto" />
@@ -369,12 +416,13 @@ const Profile = () => {
             )}
           </div>
         </TabsContent>
-
         {/* Starred APIs Content */}
         <TabsContent value="starred">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
             {loading ? (
-              Array(3).fill(0).map((_, i) => <SkeletonCard key={i} />)
+              Array(3)
+                .fill(0)
+                .map((_, i) => <SkeletonCard key={i} />)
             ) : filteredStarredAPIs.length === 0 ? (
               <div className="col-span-full text-center py-12 space-y-4 text-muted-foreground">
                 <Bookmark className="h-12 w-12 mx-auto" />

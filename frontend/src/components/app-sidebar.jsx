@@ -53,7 +53,7 @@ export function AppSidebar(props) {
       },
       {
         title: "Profile",
-        url: `/profile/${user.clerkUserId}`,
+        url: `/profile/${user._id}`,
         icon: User,
       },
     ],

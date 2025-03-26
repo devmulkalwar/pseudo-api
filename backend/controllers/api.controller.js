@@ -228,3 +228,27 @@ export const serveFakeData = async (req, res) => {
     handleError(res, "Error generating data", error);
   }
 };
+
+export const getApi = async (req, res) => { 
+  try {
+    const { apiId } = req.params;
+    const api = await API.findById(apiId);
+    if (!api) {
+      return res
+        .status(404)
+        .json({ success: false, message: "API not found" });
+    }
+    res.status(200).json({ success: true, data: api });
+  } catch (error) {
+    handleError(res, "Error fetching API", error);
+  }
+};
+
+export const getAllApi = async (req, res) => {
+  try {
+    const apis = await API.find();
+    res.status(200).json({ success: true, data: apis });
+  } catch (error) {
+    handleError(res, "Error fetching APIs", error);
+  }
+};

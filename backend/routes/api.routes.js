@@ -6,15 +6,18 @@ import {
   editApi, 
   editSchema, 
   getSchema, 
-  serveFakeData 
+  serveFakeData,
+  getAllApi,
+  getApi
 } from "../controllers/api.controller.js";
 import { requireAuth } from "@clerk/express";
 
 const router = express.Router();
 
+router.get("/get-all-Api", getAllApi );
 // Public route (no auth required)
 router.get("/:apiId", serveFakeData);
-
+router.get("/get-api/:apiId", getApi );
 router.use(requireAuth());
 // API Management routes
 router.post("/create", createApi);

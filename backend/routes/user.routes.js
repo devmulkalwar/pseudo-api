@@ -1,13 +1,20 @@
 import express from "express";
 import { requireAuth } from "@clerk/express";
-import { getAllUsers, getUsersByClerkId } from "../controllers/user.controller.js";
+import { 
+  getAllUsers, 
+  getUsersByClerkId, 
+  followUser, 
+  unfollowUser 
+} from "../controllers/user.controller.js";
 
 const router = express.Router();
 
-// Get all users in the database
+// Public routes
 router.get("/", getAllUsers);
-
-// Get a user by Clerk ID
 router.get("/:clerkUserId", getUsersByClerkId);
+
+// Protected routes (only authenticated users can follow/unfollow)
+router.post("/follow/:clerkUserId", requireAuth(), followUser);
+router.post("/unfollow/:clerkUserId", requireAuth(), unfollowUser);
 
 export default router;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +34,7 @@ import { Link } from "react-router-dom";
 import useGlobalContext from "@/hooks/useGlobalContext";
 
 const Explore = () => {
-  const{users}= useGlobalContext();
+  const { users, apis } = useGlobalContext();
   const [searchMode, setSearchMode] = useState("apis");
   // Dummy API data
   const apiCardsData = [
@@ -104,6 +104,10 @@ const Explore = () => {
       },
     },
   ];
+
+  useEffect(() => {
+    console.log(apis);
+  }, []);
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -218,16 +222,19 @@ const Explore = () => {
                 Recent
               </TabsTrigger>
             </TabsList>
-
             <TabsContent value="all" className="mt-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {apiCardsData.map((api, index) => (
-                  <ApiCard
-                    key={index}
-                    {...api}
-                    className="hover:scale-[1.02] transition-transform duration-200"
-                  />
-                ))}
+                {Array.isArray(apis) ? (
+                  apis.map((api, index) => (
+                    <ApiCard
+                      key={index}
+                      {...api}
+                      className="hover:scale-[1.02] transition-transform duration-200"
+                    />
+                  ))
+                ) : (
+                  <p>No APIs found.</p>
+                )}
               </div>
             </TabsContent>
 

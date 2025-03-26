@@ -4,6 +4,7 @@ import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
 
 const GlobalProvider = ({ children }) => {
+  
   // Clerk Authentication
   const { isLoaded, userId, getToken } = useAuth();
   const [user, setUser] = useState(null);
@@ -50,7 +51,7 @@ const GlobalProvider = ({ children }) => {
         }
       );
   
-      return response.data; // Returns the API URL or success message
+      return response.data; 
     } catch (error) {
       console.error("Error creating API:", error);
       throw error.response?.data || error.message;
@@ -66,6 +67,12 @@ const GlobalProvider = ({ children }) => {
   useEffect(() => {
     getUsers();
   }, []);
+
+  useEffect(()=>{
+    getToken().then((token) => {
+      console.log(token);
+    });
+  },[])
 
   return (
     <GlobalContext.Provider

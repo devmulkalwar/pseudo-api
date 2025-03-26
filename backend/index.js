@@ -15,28 +15,15 @@ connectDB();
 
 // Global CORS middleware
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
 
-// Apply Clerk middleware for authentication (applies to all routes defined after)
-app.use(clerkMiddleware());
 
-// Parse URL-encoded bodies
 app.use(express.urlencoded({ extended: true }));
-
-// Webhook routes (if they need URL-encoded parsing, they should be defined separately)
 app.use("/webhooks", webhookRouter);
 
-// Global JSON parsing for all other routes
 app.use(express.json());
 
-// Mount routes
+
+app.use(clerkMiddleware());
 app.use("/api/users", userRouter);
 app.use("/api/pseudoapi", apiRouter); 
 

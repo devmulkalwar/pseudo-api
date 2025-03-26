@@ -12,63 +12,59 @@ import {
 } from "@/components/ui/sidebar";
 import { NavUser } from "./nav-user";
 import { Link } from "react-router-dom";
+import useGlobalContext from "@/hooks/useGlobalContext";
 
-// Sample data
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
- 
-  navMain: [
-    {
-      title: "Home",
-      url: "/",
-      icon: Home,
-      isActive: true,
-    },
-    {
-      title: "Explore",
-      url: "/explore",
-      icon: Compass,
-    },
-    {
-      title: "Create API", 
-      url: "/create-api",
-      icon: PlusCircle,
-    },
-    {
-      title: "Documentation",
-      url: "/docs",
-      icon: BookOpen,
-    },
-    {
-      title: "About",
-      url: "/about",
-      icon: Info,
-    },
-    {
-      title: "Contact",
-      url: "/contact",
-      icon: Mail,
-    },
-    {
-      title: "Profile",
-      url: "/profile/1",
-      icon: User,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings2,
-    },
-  ],
-};
 
 export function AppSidebar(props) {
+  const {user} = useGlobalContext();
+  const data = {
+ 
+    navMain: [
+      {
+        title: "Home",
+        url: "/",
+        icon: Home,
+        isActive: true,
+      },
+      {
+        title: "Explore",
+        url: "/explore",
+        icon: Compass,
+      },
+      {
+        title: "Create API", 
+        url: "/create-api",
+        icon: PlusCircle,
+      },
+      {
+        title: "Documentation",
+        url: "/docs",
+        icon: BookOpen,
+      },
+      {
+        title: "About",
+        url: "/about",
+        icon: Info,
+      },
+      {
+        title: "Contact",
+        url: "/contact",
+        icon: Mail,
+      },
+      {
+        title: "Profile",
+        url: `/profile/${user.clerkUserId}`,
+        icon: User,
+      },
+    ],
+    navSecondary: [
+      {
+        title: "Settings",
+        url: "/settings",
+        icon: Settings2,
+      },
+    ],
+  };
   return (
     <Sidebar collapsible="icon" className="border-r-0" {...props}>
       <SidebarHeader className="flex h-16 items-center justify-between px-4 border-b">

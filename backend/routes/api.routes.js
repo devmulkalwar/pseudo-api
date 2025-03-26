@@ -1,28 +1,29 @@
 import express from "express";
-import { createApi, defineSchema, deleteApi, editApi, editSchema, getSchema, serveFakeData } from "../controllers/api.controller.js";
+import { 
+  createApi, 
+  defineSchema, 
+  deleteApi, 
+  editApi, 
+  editSchema, 
+  getSchema, 
+  serveFakeData 
+} from "../controllers/api.controller.js";
 import { requireAuth } from "@clerk/express";
 
 const router = express.Router();
 
-// ✅ Create API
-router.post("/create",createApi);
-
-// ✅ Edit API
-router.put("/:apiId/edit",requireAuth(),editApi);
-
-// ✅ Delete API
-router.delete("/:apiId/delete",requireAuth(), deleteApi);
-
-// ✅ Define Schema
-router.post("/:apiId/schema",requireAuth(), defineSchema);
-
-//get-schema
-router.get("/:apiId/get-schema",requireAuth(), getSchema);
-
-//edit schema
-router.put("/:apiId/edit-schema", requireAuth(), editSchema);
-
-// ✅ Serve Fake Data
+// Public route (no auth required)
 router.get("/:apiId", serveFakeData);
+
+router.use(requireAuth());
+// API Management routes
+router.post("/create", createApi);
+router.put("/:apiId/edit", editApi);
+router.delete("/:apiId/delete", deleteApi);
+
+// Schema Management routes
+router.post("/:apiId/schema", defineSchema);
+router.get("/:apiId/get-schema", getSchema);
+router.put("/:apiId/edit-schema", editSchema);
 
 export default router;

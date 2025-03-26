@@ -42,6 +42,10 @@ export const clerkWebHook = async (req, res) => {
           fullName,
           createdApis: [], 
           starredApis: [], 
+          followers: [],
+          following: [],
+          stars:0,
+          updatedAt: new Date,
         },
         { upsert: true, new: true }
       );

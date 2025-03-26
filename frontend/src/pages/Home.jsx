@@ -35,10 +35,12 @@ const Home = () => {
           Create mock REST APIs instantly with realistic data using Faker.js.
           Perfect for prototyping, testing, and demo applications.
         </p>
-        <Button size="lg" className="gap-2">
-          <RocketIcon className="h-4 w-4" />
-          Get Started for Free
-        </Button>
+        <Link to="/explore">
+          <Button size="lg" className="gap-2">
+            <RocketIcon className="h-4 w-4" />
+            Get Started for Free
+          </Button>
+        </Link>
       </div>
 
       {/* Features Grid */}
@@ -113,7 +115,7 @@ const Home = () => {
             </CardDescription>
           </CardHeader>
           <CardFooter>
-          <Button asChild variant="outline" className="w-full">
+            <Button asChild variant="outline" className="w-full">
               <Link to="/create-api">
                 <BookOpen className="h-4 w-4" />
                 View Docs
@@ -131,7 +133,7 @@ const Home = () => {
             <Button asChild variant="outline" className="w-full">
               <Link to="/explore">
                 <StarIcon className="h-4 w-4" />
-                Popular APIs
+                Explore APIs
               </Link>
             </Button>
           </CardFooter>

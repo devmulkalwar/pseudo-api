@@ -1,6 +1,5 @@
 import User from "../models/user.model.js";
 
-
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}, "-__v -createdAt -updatedAt"); // Exclude metadata fields
@@ -10,7 +9,6 @@ export const getAllUsers = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 export const getUsersByClerkId = async (req, res) => {
   try {

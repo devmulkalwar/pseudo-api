@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,78 +36,44 @@ import useGlobalContext from "@/hooks/useGlobalContext";
 const Explore = () => {
   const { users, apis } = useGlobalContext();
   const [searchMode, setSearchMode] = useState("apis");
-  // Dummy API data
-  const apiCardsData = [
-    {
-      name: "Weather API",
-      description: "Global weather data provider",
-      endpoint: "/api/weather",
-      entries: 1500,
-      isPublic: true,
-      owner: {
-        firstName: "John",
-        lastName: "Doe",
-        username: "johndoe",
-        profileImageUrl: "/avatar.jpg",
-      },
-      tags: ["REST", "Open Source", "JSON", "Free Tier"],
-    },
-    {
-      name: "News API",
-      description: "Real-time news updates",
-      endpoint: "/api/news",
-      entries: 2000,
-      isPublic: true,
-      owner: {
-        firstName: "Jane",
-        lastName: "Smith",
-        username: "janesmith",
-        profileImageUrl: "/avatar2.jpg",
-      },
-      starCount: 5,
-      tags: ["REST", "XML", "Premium"],
-    },
-    {
-      name: "Finance API",
-      description: "Stock market and financial data",
-      endpoint: "/api/finance",
-      entries: 1200,
-      isPublic: false,
-      owner: {
-        firstName: "Alice",
-        lastName: "Brown",
-        username: "alicebrown",
-        profileImageUrl: "/avatar3.jpg",
-      },
-      starCount: 10,
-      tags: ["GraphQL", "JSON", "Enterprise"],
-    },
-  ];
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("all");
 
-  // Dummy Users data
-  const userCardsData = [
-    {
-      _id: "67e3cf70c1529f59b82a62c4",
-      clerkUserId: "user_2uqjVSdXh9HuBU1dOlELMTSrZZR",
-      fullName: "Dev Mulkalwar",
-      username: "dev_mulkalwar",
-      profileImage:
-        "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18ydXFqVlE1Y3BFbUdTVWNwODJBSzlRSnkzS2sifQ",
-      role: "user",
-      starredApis: [1, 2, 3, 4, 5], // 5 starred APIs
-      followers: [1, 2, 3], // 3 followers
-      following: [1, 2],
-      createdApis: [1, 2, 3, 4], // 4 created APIs
-      preferences: {
-        darkMode: false,
-        language: "en",
-      },
-    },
-  ];
+  // Filtered APIs
+  const filteredApis = useMemo(() => {
+    if (!Array.isArray(apis)) return [];
+    
+    return apis.filter(api => {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = 
+        api.name?.toLowerCase().includes(searchLower) ||
+        api.description?.toLowerCase().includes(searchLower) ||
+        api.tags?.some(tag => tag.toLowerCase().includes(searchLower)) ||
+        api.endpoint?.toLowerCase().includes(searchLower);
 
-  useEffect(() => {
-    console.log(apis);
-  }, []);
+      const matchesFilter = 
+        filterType === "all" || 
+        (filterType === "rest" && api.type === "rest") ||
+        (filterType === "graphql" && api.type === "graphql") ||
+        (filterType === "public" && api.isPublic);
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [apis, searchQuery, filterType]);
+
+  // Filtered Users
+  const filteredUsers = useMemo(() => {
+    if (!Array.isArray(users)) return [];
+
+    return users.filter(user => {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        user.username?.toLowerCase().includes(searchLower) ||
+        user.fullName?.toLowerCase().includes(searchLower) ||
+        user.bio?.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [users, searchQuery]);
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -173,11 +139,13 @@ const Explore = () => {
                 searchMode === "apis" ? "Search APIs..." : "Search users..."
               }
               className="pl-12 h-11 text-base shadow-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
           {searchMode === "apis" && (
-            <Select>
+            <Select onValueChange={(value) => setFilterType(value)}>
               <SelectTrigger className="w-full sm:w-[200px] h-11">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-muted-foreground" />
@@ -222,10 +190,11 @@ const Explore = () => {
                 Recent
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="all" className=" flex flex-col justify-center items-center mt-8">
+
+            <TabsContent value="all" className="flex flex-col justify-center items-center mt-8">
               <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.isArray(apis) ? (
-                  apis.map((api, index) => (
+                {filteredApis.length > 0 ? (
+                  filteredApis.map((api, index) => (
                     <ApiCard
                       key={index}
                       {...api}
@@ -233,7 +202,15 @@ const Explore = () => {
                     />
                   ))
                 ) : (
-                  <p>No APIs found.</p>
+                  <div className="col-span-full py-16 text-center space-y-4 bg-muted/30 rounded-2xl border border-dashed">
+                    <FileJson className="h-12 w-12 text-muted-foreground mx-auto" />
+                    <h3 className="text-xl font-semibold text-muted-foreground">
+                      No APIs found
+                    </h3>
+                    <p className="text-muted-foreground/80">
+                      Try adjusting your search or filters
+                    </p>
+                  </div>
                 )}
               </div>
             </TabsContent>
@@ -265,13 +242,25 @@ const Explore = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {users.map((user, index) => (
-            <UserCard
-              key={index}
-              user={user}
-              className="hover:scale-[1.02] transition-transform duration-200"
-            />
-          ))}
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user, index) => (
+              <UserCard
+                key={index}
+                user={user}
+                className="hover:scale-[1.02] transition-transform duration-200"
+              />
+            ))
+          ) : (
+            <div className="col-span-full py-16 text-center space-y-4 bg-muted/30 rounded-2xl border border-dashed">
+              <User className="h-12 w-12 text-muted-foreground mx-auto" />
+              <h3 className="text-xl font-semibold text-muted-foreground">
+                No users found
+              </h3>
+              <p className="text-muted-foreground/80">
+                Try adjusting your search query
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

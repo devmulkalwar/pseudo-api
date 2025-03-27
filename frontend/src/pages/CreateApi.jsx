@@ -35,6 +35,8 @@ import { Switch } from "@/components/ui/switch";
 import { faker } from "@faker-js/faker";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import CodeBlock from "@/components/CodeBlock";
+import useGlobalContext from "@/hooks/useGlobalContext";
+import { useAuth } from "@clerk/clerk-react";
 
 const CreateApi = () => {
   const [step, setStep] = useState(1);
@@ -50,6 +52,11 @@ const CreateApi = () => {
   const [entries, setEntries] = useState(10);
   const [generatedEndpoint, setGeneratedEndpoint] = useState("");
   const [showDialog, setShowDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // Global Context function for creating API
+  const { createApi, user } = useGlobalContext();
+  const { getToken } = useAuth();
 
   const addField = () => {
     setFields([
@@ -77,7 +84,9 @@ const CreateApi = () => {
 
   const generateEndpoint = () => {
     const endpointId = Math.random().toString(36).substr(2, 9);
-    setGeneratedEndpoint(`${import.meta.env.VITE_SERVER_URL}/pseudoapi/${endpointId}`);
+    setGeneratedEndpoint(
+      `${import.meta.env.VITE_SERVER_URL}/pseudoapi/${endpointId}`
+    );
     setShowDialog(true);
   };
 
@@ -87,6 +96,35 @@ const CreateApi = () => {
       ...apiDetails,
       tags: [...new Set([...apiDetails.tags, newTag])],
     });
+  };
+
+  // Function to call createApi on step 1 completion.
+  const handleContinueToStructure = async () => {
+    const data = {
+          owner:user._id,
+          ownerClerkId:user.clerkUserId,
+          name: apiDetails.name,
+          description: apiDetails.description,
+          isPublic: apiDetails.isPublic,
+          tags: apiDetails.tags,
+    };
+    const apiData = {
+      ...data,
+    };
+
+    try {
+      const token = await getToken();
+      
+      await createApi(apiData, token);
+      
+      setStep(2);
+      
+      setErrorMessage("");
+    } catch (err) {
+      
+      setErrorMessage(err?.message || "Error creating API. Please try again.");
+      setStep(1);
+    }
   };
 
   return (
@@ -183,7 +221,12 @@ const CreateApi = () => {
                     {tag}
                     <Trash2
                       className="h-4 w-4 cursor-pointer hover:text-destructive transition"
-                      onClick={() => handleRemoveTag(tag)}
+                      onClick={() =>
+                        setApiDetails({
+                          ...apiDetails,
+                          tags: apiDetails.tags.filter((t) => t !== tag),
+                        })
+                      }
                     />
                   </Badge>
                 ))}
@@ -203,9 +246,13 @@ const CreateApi = () => {
               </div>
             </div>
 
+            {errorMessage && (
+              <p className="text-sm text-destructive">{errorMessage}</p>
+            )}
+
             <Button
               className="w-full mt-4"
-              onClick={() => setStep(2)}
+              onClick={handleContinueToStructure}
               disabled={!apiDetails.name}
             >
               Continue to Structure
@@ -215,7 +262,6 @@ const CreateApi = () => {
       ) : (
         <Card>
           {/* API Fields Section */}
-
           <CardHeader className="flex flex-row justify-between items-center">
             <div className="flex items-center gap-2">
               <Button variant="outline" size="icon" onClick={() => setStep(1)}>
@@ -313,33 +359,27 @@ const CreateApi = () => {
                 Maximum: 1000 entries
               </p>
             </div>
-          
 
-          {/* Data Preview Section */}
-          
+            {/* Data Preview Section */}
             <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
               <CardTitle className="text-lg sm:text-xl">Data Preview</CardTitle>
             </CardHeader>
-            
-              <CodeBlock
-                code={JSON.stringify(
-                  [generateFakeData(), generateFakeData(), generateFakeData()],
-                  null,
-                  2
-                )}
-                className="text-sm"
-              />
-           
-          
+            <CodeBlock
+              code={JSON.stringify(
+                [generateFakeData(), generateFakeData(), generateFakeData()],
+                null,
+                2
+              )}
+              className="text-sm"
+            />
 
-          {/* Action Buttons */}
-
-          <Button
-            className="w-full sm:flex-1 order-1 sm:order-2"
-            onClick={generateEndpoint}
-          >
-            Generate API
-          </Button>
+            {/* Action Buttons */}
+            <Button
+              className="w-full sm:flex-1 order-1 sm:order-2"
+              onClick={generateEndpoint}
+            >
+              Generate API
+            </Button>
           </CardContent>
         </Card>
       )}

@@ -37,12 +37,12 @@ const GlobalProvider = ({ children }) => {
   const createApi = async (apiData, token) => {
     try {
       const response = await axios.post(
-        `${SERVER_URL}/api/pseudoapi/create`,
+        `${SERVER_URL}/pseudoapi/create`,
         apiData,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+             Authorization: `Bearer ${token}`,
           },
         }
       );

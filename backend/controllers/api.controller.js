@@ -38,13 +38,12 @@ export const createApi = async (req, res) => {
     });
     
     // Set the endpoint
-    newApi.endpoint = `/api/${newApi._id}`;
+    newApi.endpoint = `${process.env.SERVER_URL}/api/${newApi._id}`;
     
     console.log("Saving API:", newApi);
     await newApi.save();
     
-    // Add the arrays after initial save using direct MongoDB update
-    // This avoids the mongoose validation issues
+    
     await API.collection.updateOne(
       { _id: newApi._id },
       { 

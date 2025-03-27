@@ -1,32 +1,39 @@
 import express from "express";
-import { 
-  createApi, 
-  defineSchema, 
-  deleteApi, 
-  editApi, 
-  editSchema, 
-  getSchema, 
+import {
+  createApi,
+  defineSchema,
+  deleteApi,
+  editApi,
+  editSchema,
+  getSchema,
   serveFakeData,
   getAllApi,
-  getApi
+  getApi,
+  getApiByUser,
+  starPost,
+  unStarPost,
 } from "../controllers/api.controller.js";
 import { requireAuth } from "@clerk/express";
 
 const router = express.Router();
 
-router.get("/get-all-Api", getAllApi );
-// Public route (no auth required)
-router.get("/:apiId", serveFakeData);
-router.get("/get-api/:apiId", getApi );
-router.use(requireAuth());
-// API Management routes
-router.post("/create", createApi);
-router.put("/:apiId/edit", editApi);
-router.delete("/:apiId/delete", deleteApi);
+router.get("/get-all-Api", getAllApi);
 
-// Schema Management routes
-router.post("/:apiId/schema", defineSchema);
-router.get("/:apiId/get-schema", getSchema);
-router.put("/:apiId/edit-schema", editSchema);
+router.get("/:apiId", serveFakeData);
+router.get("/get-api/:apiId", getApi);
+router.post("/get-api-by-user/:userId", getApiByUser);
+
+// router.use(requireAuth());
+router.post("/create", createApi);
+router.put("/edit/:apiId", editApi);
+router.delete("/delete/:apiId", deleteApi);
+
+router.post("/schema/:apiId", defineSchema);
+router.get("/get-schema/:apiId", getSchema);
+router.put("/edit-schema/:apiId/", editSchema);
+
+router.post("/star-api/:apiId", starPost);
+router.post("/unstar-api/:apiId",unStarPost);
+
 
 export default router;

@@ -222,8 +222,8 @@ const Explore = () => {
                 Recent
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="all" className="mt-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <TabsContent value="all" className=" flex flex-col justify-center items-center mt-8">
+              <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.isArray(apis) ? (
                   apis.map((api, index) => (
                     <ApiCard

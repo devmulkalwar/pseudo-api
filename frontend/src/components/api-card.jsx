@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Star, Pencil, Trash } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Star, Pencil, Trash, Share } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,23 +10,33 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import useGlobalContext from "@/hooks/useGlobalContext";
 
 export function ApiCard({
+  _id,
   name,
   description,
   endpoint,
   entries,
   isPublic,
-  owner = {},
+  owner,
   tags = [],
   isOwner = false,
-  starCount = 0,
+  starredBy = [],
   onEdit = () => {},
   onDelete = () => {},
-}) {
+  onShare= () => {},
+}) {  
+  const { users } = useGlobalContext();
   const [isStarred, setIsStarred] = useState(false);
-  const [count, setCount] = useState(starCount);
+  const [count, setCount] = useState(starredBy.length);
+  const [ownerData, setOwnerData] = useState({});
+
+  useEffect(() => {
+    const result = users.find((user) => user._id === owner);
+    setOwnerData(result);
+    console.log(ownerData);
+  }, [users, owner, ownerData]);
 
   const toggleStar = () => {
     setIsStarred((prev) => {
@@ -46,26 +56,6 @@ export function ApiCard({
       </CardHeader>
 
       <CardContent className="grid gap-3 px-4 py-2 sm:px-6 sm:py-4">
-        <div className="flex items-center space-x-2 rounded-md bg-muted p-2 sm:p-3">
-          <code className="font-mono text-xs sm:text-sm break-words overflow-x-auto">
-            {endpoint}
-          </code>
-        </div>
-
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <Badge
-                key={tag}
-                variant="outline"
-                className="px-2 py-1 text-xs font-medium text-primary"
-              >
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
-
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-muted-foreground">
           <div className="flex items-center">
             <span className="mr-1 font-semibold">{entries}</span>
@@ -85,24 +75,43 @@ export function ApiCard({
             )}
           </div>
         </div>
+
+        <div className="flex items-center space-x-2 rounded-md bg-muted p-2 sm:p-3 overflow-x-auto">
+          <code className="font-mono text-xs sm:text-sm break-words ">
+            {endpoint}
+          </code>
+        </div>
+
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <Button
+                key={tag}
+                
+                size="sm"
+                className="px-2 py-1"
+              >
+                {tag}
+              </Button>
+            ))}
+          </div>
+        )}
       </CardContent>
 
       <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-4 py-3 sm:px-6 sm:py-4">
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
             <AvatarImage
-              src={owner?.profileImageUrl || "/default-avatar.png"}
+              src={ownerData?.profileImage || "/default-avatar.png"}
             />
-            <AvatarFallback>
-              {(owner?.firstName?.[0] || "U") + (owner?.lastName?.[0] || "")}
-            </AvatarFallback>
+            <AvatarFallback>{ownerData?.fullName?.[0] || "U"}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">
-              {owner?.firstName || "Unknown"} {owner?.lastName || ""}
+              {ownerData?.fullName || "Unknown"}
             </p>
             <p className="text-sm text-muted-foreground truncate">
-              @{owner?.username || "unknown"}
+              @{ownerData?.username || "unknown"}
             </p>
           </div>
         </div>
@@ -127,9 +136,21 @@ export function ApiCard({
             >
               <Trash className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 sm:h-9 sm:w-9"
+              onClick={onShare}
+              aria-label="Share API"
+            >
+              <Share className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
           </div>
         ) : (
           <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+            <div>
+
+            </div>
             <Button
               variant="ghost"
               size="icon"
@@ -144,6 +165,15 @@ export function ApiCard({
               />
             </Button>
             <span className="text-sm min-w-[20px] text-center">{count}</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 sm:h-9 sm:w-9"
+              onClick={onShare}
+              aria-label="Share API"
+            >
+              <Share className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
           </div>
         )}
       </CardFooter>

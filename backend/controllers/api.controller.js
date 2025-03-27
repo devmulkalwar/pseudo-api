@@ -252,3 +252,16 @@ export const getAllApi = async (req, res) => {
     handleError(res, "Error fetching APIs", error);
   }
 };
+
+export const getApiByUser = async (req, res) => {
+  res.status(200).json({ success: true, data:"getApiByUser" });
+};
+
+export const starPost = async (req, res) => {
+  res.status(200).json({ success: true, data:"starPost" });
+};
+
+export const unStarPost = async (req, res) => {
+  res.status(200).json({ success: true, data:"unStarPost" });
+};
+  

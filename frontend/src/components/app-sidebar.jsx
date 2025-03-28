@@ -14,11 +14,9 @@ import { NavUser } from "./nav-user";
 import { Link } from "react-router-dom";
 import useGlobalContext from "@/hooks/useGlobalContext";
 
-
 export function AppSidebar(props) {
   const {user} = useGlobalContext();
   const data = {
- 
     navMain: [
       {
         title: "Home",

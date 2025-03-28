@@ -38,7 +38,7 @@ export const createApi = async (req, res) => {
     });
     
     // Set the endpoint
-    newApi.endpoint = `${process.env.SERVER_URL}/api/${newApi._id}`;
+    newApi.endpoint = `${process.env.SERVER_URL}/api/pseudoapi/${newApi._id}`;
     
     console.log("Saving API:", newApi);
     await newApi.save();

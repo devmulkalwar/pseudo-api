@@ -11,7 +11,6 @@ const GlobalProvider = ({ children }) => {
   const [apis, setApis] = useState([]); // Initialize as an empty array
   const [loading, setLoading] = useState(true); // Start with loading true
   const [error, setError] = useState(null);
-  const [schema, setSchema] = useState([]);
   const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
   const getUser = async (userId) => {
@@ -42,7 +41,7 @@ const GlobalProvider = ({ children }) => {
         {
           headers: {
             "Content-Type": "application/json",
-             Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -53,11 +52,37 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
+
+  const defineSchema = async (id, data, token) => {
+    try {
+      // Use the environment variable for the server URL.
+      const serverUrl = import.meta.env.VITE_SERVER_URL;
+      const response = await axios.post(
+        `${serverUrl}/pseudoapi/schema/${id}`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error defining schema:", error);
+      // Propagate the error to be handled by the caller
+      throw error;
+    }
+  };
+  
+
   const getApis = async () => {
     try {
       const response = await axios.get(`${SERVER_URL}/pseudoapi/get-all-Api`);
       // Assuming response.data is the array; if your backend wraps it, adjust accordingly
-      setApis(Array.isArray(response.data) ? response.data : response.data.data);
+      setApis(
+        Array.isArray(response.data) ? response.data : response.data.data
+      );
     } catch (error) {
       console.error("Error fetching APIs:", error);
       setError(error);
@@ -89,9 +114,12 @@ const GlobalProvider = ({ children }) => {
     });
   }, []);
 
-  // Until loading is false, don't render children
   if (loading) {
-    return <div>Loading...</div>; // You can replace this with a spinner or skeleton component
+    return (
+      <div className="flex justify-center items-center h-screen bg-background">
+        <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
   }
 
   return (
@@ -107,9 +135,8 @@ const GlobalProvider = ({ children }) => {
         setLoading,
         error,
         setError,
-        schema,
-        setSchema,
         createApi,
+        defineSchema
       }}
     >
       {children}

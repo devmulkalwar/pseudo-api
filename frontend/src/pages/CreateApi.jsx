@@ -12,6 +12,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 import {
   Plus,
   Trash2,
@@ -41,7 +42,7 @@ import { useAuth } from "@clerk/clerk-react";
 const CreateApi = () => {
   const [step, setStep] = useState(1);
   const [fields, setFields] = useState([
-    { id: 1, name: "", type: "name.firstName" },
+    { id: 1, fieldName: "fullName", fieldType: "person.fullName" },
   ]);
   const [apiDetails, setApiDetails] = useState({
     isPublic: true,
@@ -53,15 +54,17 @@ const CreateApi = () => {
   const [generatedEndpoint, setGeneratedEndpoint] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [apiData, setApiData] = useState("");
+  const [schema, setSchema] = useState("");
 
   // Global Context function for creating API
-  const { createApi, user } = useGlobalContext();
+  const { createApi, user, defineSchema } = useGlobalContext();
   const { getToken } = useAuth();
 
   const addField = () => {
     setFields([
       ...fields,
-      { id: fields.length + 1, name: "", type: "name.firstName" },
+      { id: fields.length + 1, fieldName: "", fieldType: "person.fullName" },
     ]);
   };
 
@@ -72,9 +75,14 @@ const CreateApi = () => {
   const generateFakeData = () => {
     return fields.reduce(
       (acc, field) => {
-        const [namespace, method] = field.type.split(".");
+        let [namespace, method] = field.fieldType.split(".");
+        // Replace deprecated namespace "name" with "person"
+        if (namespace === "name") {
+          namespace = "person";
+        }
         if (faker[namespace] && faker[namespace][method]) {
-          acc[field.name || `field_${field.id}`] = faker[namespace][method]();
+          acc[field.fieldName || `field_${field.id}`] =
+            faker[namespace][method]();
         }
         return acc;
       },
@@ -82,12 +90,42 @@ const CreateApi = () => {
     );
   };
 
-  const generateEndpoint = () => {
-    const endpointId = Math.random().toString(36).substr(2, 9);
-    setGeneratedEndpoint(
-      `${import.meta.env.VITE_SERVER_URL}/pseudoapi/${endpointId}`
-    );
-    setShowDialog(true);
+  const generateEndpoint = async () => {
+    try {
+      const token = await getToken();
+
+      const apiResponse = await createApi(apiData, token);
+      console.log(apiResponse);
+      const endpointId = apiResponse?.apiId;
+      if (!endpointId) {
+        throw new Error("API creation failed: Missing API id.");
+      }
+      // Remove the id property and ensure each fieldType has the "faker." prefix.
+      const schemaFields = fields.map(({ id, fieldName, fieldType }) => {
+        // If the fieldType does not start with "faker.", add it.
+        const updatedFieldType = fieldType.startsWith("faker.")
+          ? fieldType
+          : `faker.${fieldType}`;
+        return { fieldName, fieldType: updatedFieldType };
+      });
+
+      const schemaPayload = {
+        entries: entries,
+        schema: schemaFields,
+      };
+
+      console.log(schemaPayload);
+      await defineSchema(endpointId, schemaPayload, token);
+
+      setStep(2);
+      setErrorMessage("");
+      setGeneratedEndpoint(
+        `${import.meta.env.VITE_SERVER_URL}/pseudoapi/${endpointId}`
+      );
+      setShowDialog(true);
+    } catch (err) {
+      setErrorMessage(err?.message || "Error creating API. Please try again.");
+    }
   };
 
   const handleAddTag = (newTag) => {
@@ -101,30 +139,15 @@ const CreateApi = () => {
   // Function to call createApi on step 1 completion.
   const handleContinueToStructure = async () => {
     const data = {
-          owner:user._id,
-          ownerClerkId:user.clerkUserId,
-          name: apiDetails.name,
-          description: apiDetails.description,
-          isPublic: apiDetails.isPublic,
-          tags: apiDetails.tags,
+      owner: user._id,
+      ownerClerkId: user.clerkUserId,
+      name: apiDetails.name,
+      description: apiDetails.description,
+      isPublic: apiDetails.isPublic,
+      tags: apiDetails.tags,
     };
-    const apiData = {
-      ...data,
-    };
-
-    try {
-      const token = await getToken();
-      
-      await createApi(apiData, token);
-      
-      setStep(2);
-      
-      setErrorMessage("");
-    } catch (err) {
-      
-      setErrorMessage(err?.message || "Error creating API. Please try again.");
-      setStep(1);
-    }
+    setApiData(data);
+    setStep(2);
   };
 
   return (
@@ -194,10 +217,7 @@ const CreateApi = () => {
                 placeholder="Describe your API (optional)"
                 value={apiDetails.description}
                 onChange={(e) =>
-                  setApiDetails({
-                    ...apiDetails,
-                    description: e.target.value,
-                  })
+                  setApiDetails({ ...apiDetails, description: e.target.value })
                 }
               />
             </div>
@@ -297,19 +317,19 @@ const CreateApi = () => {
                 <div key={field.id} className="grid grid-cols-2 gap-2">
                   <Input
                     placeholder="Field name"
-                    value={field.name}
+                    value={field.fieldName}
                     onChange={(e) => {
                       const newFields = [...fields];
-                      newFields[index].name = e.target.value;
+                      newFields[index].fieldName = e.target.value;
                       setFields(newFields);
                     }}
                   />
                   <div className="flex items-center gap-2">
                     <Select
-                      value={field.type}
+                      value={field.fieldType}
                       onValueChange={(value) => {
                         const newFields = [...fields];
-                        newFields[index].type = value;
+                        newFields[index].fieldType = value;
                         setFields(newFields);
                       }}
                     >
@@ -405,7 +425,9 @@ const CreateApi = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button className="w-full">View API Documentation</Button>
+            <Link to="/docs">
+              <Button className="w-full">View API Documentation</Button>
+            </Link>
           </DialogFooter>
         </DialogContent>
       </Dialog>

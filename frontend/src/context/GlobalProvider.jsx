@@ -13,13 +13,22 @@ const GlobalProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
-  const getUser = async (userId) => {
+  // Updated getUser to decide which endpoint to call based on the format of the ID.
+  const getUser = async (id) => {
     try {
-      const response = await axios.get(`${SERVER_URL}/users/${userId}`);
+      let response;
+      // If the id starts with "user_", it's a Clerk ID; otherwise assume it's a MongoDB id.
+      if (id.startsWith("user_")) {
+        response = await axios.get(`${SERVER_URL}/users/clerk/${id}`);
+      } else {
+        response = await axios.get(`${SERVER_URL}/users/id/${id}`);
+      }
       setUser(response.data);
+      return response.data;
     } catch (error) {
       console.error("Error fetching user:", error);
       setError(error);
+      throw error;
     }
   };
 
@@ -52,13 +61,10 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
-
   const defineSchema = async (id, data, token) => {
     try {
-      // Use the environment variable for the server URL.
-      const serverUrl = import.meta.env.VITE_SERVER_URL;
       const response = await axios.post(
-        `${serverUrl}/pseudoapi/schema/${id}`,
+        `${SERVER_URL}/pseudoapi/schema/${id}`,
         data,
         {
           headers: {
@@ -70,16 +76,14 @@ const GlobalProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error("Error defining schema:", error);
-      // Propagate the error to be handled by the caller
       throw error;
     }
   };
-  
 
   const getApis = async () => {
     try {
       const response = await axios.get(`${SERVER_URL}/pseudoapi/get-all-Api`);
-      // Assuming response.data is the array; if your backend wraps it, adjust accordingly
+      // Adjust if your backend wraps the data differently
       setApis(
         Array.isArray(response.data) ? response.data : response.data.data
       );
@@ -89,11 +93,34 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
-  // Fetch all initial data
+  const getApiById = async (apiId) => {
+    try {
+      const response = await axios.get(`${SERVER_URL}/pseudoapi/get-api/${apiId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching API by ID:", error);
+      setError(error);
+    }
+  };
+
+  const getApiByUser = async (userId) => {
+    try {
+      const response = await axios.get(
+        `${SERVER_URL}/pseudoapi/get-api-by-user/${userId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching APIs by user:", error);
+      setError(error);
+    }
+  };
+
+  // Fetch all initial data on load
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (userId) {
+          // Fetch current user using the provided userId
           await getUser(userId);
         }
         await getUsers();
@@ -127,16 +154,19 @@ const GlobalProvider = ({ children }) => {
       value={{
         user,
         setUser,
+        getUser,
         users,
         setUsers,
         apis,
         setApis,
+        getApiById,
         loading,
         setLoading,
         error,
         setError,
         createApi,
-        defineSchema
+        defineSchema,
+        getApiByUser
       }}
     >
       {children}

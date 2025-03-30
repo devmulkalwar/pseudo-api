@@ -4,14 +4,16 @@ import {
   getAllUsers, 
   getUsersByClerkId, 
   followUser, 
-  unfollowUser 
+  unfollowUser,
+  getUserById 
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
 
 // Public routes
 router.get("/", getAllUsers);
-router.get("/:clerkUserId", getUsersByClerkId);
+router.get("/id/:userId", getUserById);            // Fetch by MongoDB document ID
+router.get("/clerk/:clerkUserId", getUsersByClerkId); // Fetch by Clerk ID
 
 // Protected routes (only authenticated users can follow/unfollow)
 router.post("/follow/:clerkUserId", requireAuth(), followUser);

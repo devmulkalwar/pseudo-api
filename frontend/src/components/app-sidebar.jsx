@@ -1,5 +1,14 @@
 import * as React from "react";
-import { Home, Compass, BookOpen, Info, Mail, Settings2, PlusCircle, User } from "lucide-react";
+import {
+  Home,
+  Compass,
+  BookOpen,
+  Info,
+  Mail,
+  Settings2,
+  PlusCircle,
+  User,
+} from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { Logo } from "@/components/logo";
@@ -15,7 +24,12 @@ import { Link } from "react-router-dom";
 import useGlobalContext from "@/hooks/useGlobalContext";
 
 export function AppSidebar(props) {
-  const {user} = useGlobalContext();
+  const { user } = useGlobalContext();
+
+  if (!user) {
+    return null;
+  }
+
   const data = {
     navMain: [
       {
@@ -30,7 +44,7 @@ export function AppSidebar(props) {
         icon: Compass,
       },
       {
-        title: "Create API", 
+        title: "Create API",
         url: "/create-api",
         icon: PlusCircle,
       },
@@ -65,13 +79,13 @@ export function AppSidebar(props) {
   };
   return (
     <Sidebar collapsible="icon" className="border-r-0" {...props}>
-      <SidebarHeader className="flex h-16 items-center justify-between px-4 border-b">
-       <Logo/>
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-      </SidebarContent>
-      <SidebarRail />
-    </Sidebar>
+    <SidebarHeader className={`flex h-16 items-center  border-b ${open ? "justify-center" : "justify-between"}`}>
+      <Logo/>
+    </SidebarHeader>
+    <SidebarContent>
+      <NavMain items={data.navMain} />
+    </SidebarContent>
+    <SidebarRail />
+  </Sidebar>
   );
 }

@@ -8,7 +8,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { UserPlus, User } from "lucide-react";
-
+import { Link } from "react-router-dom";
 export function UserCard({ user }) {
   return (
     <Card className="w-full max-w-sm sm:max-w-md shadow-lg rounded-xl hover:shadow-xl transition-shadow mx-auto">
@@ -49,10 +49,12 @@ export function UserCard({ user }) {
           <UserPlus className="h-4 w-4" />
           <span>Follow</span>
         </Button>
+        <Link to={`/profile/${user._id}`} className="w-full sm:w-auto">
         <Button variant="default" size="sm" className="gap-2 px-3 w-full sm:w-auto">
           <User className="h-4 w-4" />
           <span>Profile</span>
         </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

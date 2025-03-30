@@ -410,8 +410,8 @@ const CreateApi = () => {
             <DialogTitle>API Created Successfully!</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-              <code className="flex-1 text-xs sm:text-sm overflow-x-auto whitespace-nowrap">
+            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg max-w-full">
+              <code className="flex-1 text-xs sm:text-sm overflow-x-auto break-all">
                 {generatedEndpoint}
               </code>
               <Button

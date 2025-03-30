@@ -11,7 +11,7 @@ import { Layers } from "lucide-react"; // Example logo icon
 import { Link } from "react-router-dom";
 
 export function Logo() {
-  const { open , isMobile } = useSidebar();
+  const { open, isMobile } = useSidebar();
 
   return (
     <SidebarMenu>
@@ -21,12 +21,14 @@ export function Logo() {
           <Link
             to="/"
             className={`flex items-center gap-2 ${
-              open ? "" : ""
+              open ? "justify-start" : "justify-center"
             } w-full`}
           >
-          
-              <Layers /> 
-
+            <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">
+                PA
+              </span>
+            </div>
             {open && (
               <span className="font-semibold text-xl text-sidebar-foreground">
                 PseudoAPI

@@ -27,6 +27,19 @@ export const getUsersByClerkId = async (req, res) => {
   }
 };
 
+export const getUserById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId, "-__v -createdAt -updatedAt"); // Exclude metadata fields
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user by ID:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 export const followUser = async (req, res) => {
   try {
@@ -64,7 +77,6 @@ export const followUser = async (req, res) => {
   }
 };
 
-// Controller to unfollow a user
 export const unfollowUser = async (req, res) => {
   try {
     // Target user's Clerk ID from route parameter
@@ -72,7 +84,7 @@ export const unfollowUser = async (req, res) => {
     // Current authenticated user's Clerk ID from req.auth (set by Clerk middleware)
     const currentUserId = req.auth.userId;
 
-    // Prevent self-unfollowing (though logically, you shouldn't be able to unfollow yourself)
+    // Prevent self-unfollowing
     if (clerkUserId === currentUserId) {
       return res.status(400).json({ message: "You cannot unfollow yourself." });
     }

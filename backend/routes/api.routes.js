@@ -1,4 +1,5 @@
 import express from "express";
+import { requireAuth } from "@clerk/express";
 import {
   createApi,
   defineSchema,
@@ -10,30 +11,29 @@ import {
   getAllApi,
   getApi,
   getApiByUser,
-  starPost,
-  unStarPost,
+  starApi,
+  unStarApi,
 } from "../controllers/api.controller.js";
-import { requireAuth } from "@clerk/express";
 
 const router = express.Router();
 
+// Public Routes
 router.get("/get-all-Api", getAllApi);
-
-router.get("/:apiId", serveFakeData);
 router.get("/get-api/:apiId", getApi);
-router.post("/get-api-by-user/:userId", getApiByUser);
+router.get("/get-schema/:apiId", getSchema);
+router.get("/get-api-by-user/:userId", getApiByUser);
 
+// Catch-all for serveFakeData should come last to prevent route conflicts
+router.get("/:apiId", serveFakeData);
+
+// Protected Routes (uncomment if needed)
 // router.use(requireAuth());
 router.post("/create", createApi);
 router.put("/edit/:apiId", editApi);
 router.delete("/delete/:apiId", deleteApi);
-
 router.post("/schema/:apiId", defineSchema);
-router.get("/get-schema/:apiId", getSchema);
-router.put("/edit-schema/:apiId/", editSchema);
-
-router.post("/star-api/:apiId", starPost);
-router.post("/unstar-api/:apiId",unStarPost);
-
+router.put("/edit-schema/:apiId", editSchema);
+router.post("/star-api/:apiId", starApi);
+router.post("/unstar-api/:apiId", unStarApi);
 
 export default router;

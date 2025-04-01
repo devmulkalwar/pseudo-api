@@ -9,7 +9,7 @@ import { useParams } from "react-router-dom";
 
 const Profile = () => {
   const { id } = useParams();
-  const { user, getApiByUser, users } = useGlobalContext();
+  const { user, users, apis } = useGlobalContext();
   const [profileUser, setProfileUser] = useState(null);
   const [createdApis, setCreatedApis] = useState([]);
   const [starredApis, setStarredApis] = useState([]);
@@ -22,18 +22,13 @@ const Profile = () => {
     }
   }, [id, users, user]);
 
+  // Instead of calling getApiByUser, filter the apis array to find the user's APIs
   useEffect(() => {
-    if (id && getApiByUser) {
-      getApiByUser(id)
-        .then((response) => {
-          setCreatedApis(response.data);
-          console.log("Created APIs:", response.data);
-        })
-        .catch((err) =>
-          console.error("Error fetching created APIs:", err)
-        );
+    if (apis && profileUser) {
+      const userApis = apis.filter((api) => api.owner === profileUser._id);
+      setCreatedApis(userApis);
     }
-  }, [id, getApiByUser]);
+  }, [apis, profileUser]);
 
   if (!profileUser) {
     return <div>Loading...</div>;

@@ -14,7 +14,7 @@ export const getUsersByClerkId = async (req, res) => {
   try {
     const { clerkUserId } = req.params;
     console.log(clerkUserId);
-    const user = await User.findOne({ clerkUserId }, "-__v -createdAt -updatedAt");
+    const user = await User.findOne({ clerkUserId });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -30,7 +30,7 @@ export const getUsersByClerkId = async (req, res) => {
 export const getUserById = async (req, res) => {
   try {
     const { userId } = req.params;
-    const user = await User.findById(userId, "-__v -createdAt -updatedAt"); // Exclude metadata fields
+    const user = await User.findById(userId); // Exclude metadata fields
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

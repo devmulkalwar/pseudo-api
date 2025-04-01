@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Star, Pencil, Trash, Share, Copy, Check, Share2Icon, ShareIcon, Share2 } from "lucide-react";
+import { Star, Pencil, Trash, Share2, Copy, Check, Clock } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import useGlobalContext from "@/hooks/useGlobalContext";
 
 export function ApiCard({
@@ -21,6 +22,8 @@ export function ApiCard({
   isPublic,
   owner,
   tags = [],
+  category="Ecommerce",
+  createdAt,
   isOwner = false,
   starredBy = [],
   onEdit = () => {},
@@ -70,7 +73,14 @@ export function ApiCard({
     <Card className="w-full max-w-[380px] hover:shadow-lg transition-shadow duration-200 overflow-hidden">
       <CardHeader className="flex flex-row justify-between px-4 py-3 sm:px-6 sm:py-4">
         <div className="flex flex-col flex-1 min-w-0">
-          <CardTitle className="text-lg sm:text-xl truncate">{name}</CardTitle>
+          <div className="flex items-center gap-2 mb-2">
+            <CardTitle className="text-lg sm:text-xl truncate">{name}</CardTitle>
+            {category && (
+              <Badge variant="outline" className="capitalize">
+                {category}
+              </Badge>
+            )}
+          </div>
           <CardDescription className="text-sm sm:text-base line-clamp-2">
             {description}
           </CardDescription>
@@ -109,8 +119,8 @@ export function ApiCard({
 
         <div className="flex items-center justify-between space-x-2 rounded-md bg-muted p-2 sm:p-3 min-w-0">
           <code
-            className="font-mono text-xs sm:text-sm flex-1 overflow-x-hidden "
-            title={endpoint} // Shows full text on hover
+            className="font-mono text-xs sm:text-sm flex-1 overflow-x-hidden"
+            title={endpoint}
           >
             {endpoint}
           </code>
@@ -132,75 +142,98 @@ export function ApiCard({
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
-              <Button key={tag} size="sm" className="px-2 py-1">
+              <Badge key={tag} variant="secondary" className="text-xs">
                 {tag}
-              </Button>
+              </Badge>
             ))}
           </div>
         )}
       </CardContent>
 
       <CardFooter className="flex justify-between items-center gap-3 px-6 py-4">
-  <div className="flex items-center gap-3 w-auto">
-    <Avatar className="h-9 w-9">
-      <AvatarImage
-        src={ownerData?.profileImage || "/default-avatar.png"}
-      />
-      <AvatarFallback>{ownerData?.fullName?.[0] || "U"}</AvatarFallback>
-    </Avatar>
-    <div className="flex-1 min-w-0">
-      <p className="text-sm font-medium truncate">
-        {ownerData?.fullName || "Unknown"}
-      </p>
-      <p className="text-sm text-muted-foreground truncate">
-        @{ownerData?.username || "unknown"}
-      </p>
-    </div>
-  </div>
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <Avatar className="h-9 w-9">
+            <AvatarImage
+              src={ownerData?.profileImage || "/default-avatar.png"}
+            />
+            <AvatarFallback>{ownerData?.fullName?.[0] || "U"}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">
+              {ownerData?.fullName || "Unknown"}
+            </p>
+            <p className="text-sm text-muted-foreground truncate">
+              @{ownerData?.username || "unknown"}
+            </p>
+            <div className="flex items-center gap-1 mt-0.5">
+              <Clock className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                {new Date(createdAt).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+        </div>
 
-  {isOwner ? (
-    <div className="flex items-center gap-2 w-auto justify-end">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-9 w-9"
-        onClick={onEdit}
-        aria-label="Edit API"
-      >
-        <Pencil className="h-5 w-5" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-9 w-9"
-        onClick={onDelete}
-        aria-label="Delete API"
-      >
-        <Trash className="h-5 w-5" />
-      </Button>
-    </div>
-  ) : (
-    <div className="flex items-center gap-4 w-auto justify-between">
-      <div className="flex flex-col items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9"
-          onClick={toggleStar}
-          aria-label="Star API"
-        >
-          <Star
-            className={`h-5 w-5 ${
-              isStarred ? "fill-yellow-400 stroke-yellow-400" : ""
-            }`}
-          />
-        </Button>
-        <span className="text-xs text-muted-foreground">{count}</span>
-      </div>
-    </div>
-  )}
-</CardFooter>
-
+        <div className="flex items-center gap-2">
+          {isOwner ? (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                onClick={onEdit}
+                aria-label="Edit API"
+              >
+                <Pencil className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                onClick={onDelete}
+                aria-label="Delete API"
+              >
+                <Trash className="h-5 w-5" />
+              </Button>
+              <div className="flex flex-col items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                onClick={toggleStar}
+                aria-label="Star API"
+              >
+                <Star
+                  className={`h-5 w-5 ${
+                    isStarred ? "fill-yellow-400 stroke-yellow-400" : ""
+                  }`}
+                />
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                {count} 
+              </span>
+            </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                onClick={toggleStar}
+                aria-label="Star API"
+              >
+                <Star
+                  className={`h-5 w-5 ${
+                    isStarred ? "fill-yellow-400 stroke-yellow-400" : ""
+                  }`}
+                />
+              </Button>
+            </div>
+          )}
+         
+        </div>
+      </CardFooter>
     </Card>
   );
 }

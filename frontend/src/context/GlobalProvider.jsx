@@ -20,10 +20,10 @@ const GlobalProvider = ({ children }) => {
       // If the id starts with "user_", it's a Clerk ID; otherwise assume it's a MongoDB id.
       if (id.startsWith("user_")) {
         response = await axios.get(`${SERVER_URL}/users/clerk/${id}`);
+        setUser(response.data);
       } else {
         response = await axios.get(`${SERVER_URL}/users/id/${id}`);
       }
-      setUser(response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching user:", error);

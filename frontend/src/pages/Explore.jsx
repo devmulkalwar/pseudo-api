@@ -61,6 +61,19 @@ const Explore = () => {
     });
   }, [apis, searchQuery, filterType]);
 
+  // Sorted APIs for different tabs
+  const trendingApis = useMemo(() => {
+    return [...filteredApis].sort((a, b) => 
+      (b.starredBy?.length || 0) - (a.starredBy?.length || 0)
+    );
+  }, [filteredApis]);
+
+  const recentApis = useMemo(() => {
+    return [...filteredApis].sort((a, b) => 
+      new Date(b.createdAt) - new Date(a.createdAt)
+    );
+  }, [filteredApis]);
+
   // Filtered Users
   const filteredUsers = useMemo(() => {
     if (!Array.isArray(users)) return [];
@@ -76,7 +89,7 @@ const Explore = () => {
   }, [users, searchQuery]);
 
   return (
-    <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Hero Section */}
       <div className="mb-12 text-center space-y-4">
         <div className="inline-flex items-center justify-center gap-2 bg-primary/10 px-6 py-2 rounded-full border border-primary/20">
@@ -89,20 +102,19 @@ const Explore = () => {
           Explore Mock APIs
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-          Browse community-built APIs or connect with developers in our
-          ecosystem.
+          Browse community-built APIs or connect with developers in our ecosystem.
         </p>
       </div>
 
       {/* Search & Filters Section */}
       <div className="flex flex-col gap-4 mb-12">
         {/* Top Row - Toggle & Create Button */}
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex gap-2 p-1 sm:w-auto">
+        <div className="flex justify-between items-center gap-4">
+          <div className="flex gap-2">
             <Button
               variant={searchMode === "apis" ? "default" : "ghost"}
               size="sm"
-              className="h-9 px-4 rounded-lg gap-2 flex-1 sm:flex-none flex items-center"
+              className="h-9 px-4 rounded-lg gap-2 flex items-center"
               onClick={() => setSearchMode("apis")}
             >
               <Zap className="h-4 w-4" />
@@ -111,7 +123,7 @@ const Explore = () => {
             <Button
               variant={searchMode === "users" ? "default" : "ghost"}
               size="sm"
-              className="h-9 px-4 rounded-lg gap-2 flex-1 sm:flex-none flex items-center"
+              className="h-9 px-4 rounded-lg gap-2 flex items-center"
               onClick={() => setSearchMode("users")}
             >
               <User className="h-4 w-4" />
@@ -121,7 +133,7 @@ const Explore = () => {
 
           <Link to="/create-api">
             <Button
-              className="h-9 px-4 rounded-lg gap-2 flex-1 sm:flex-none flex items-center"
+              className="h-9 px-4 rounded-lg gap-2 flex items-center"
               size="sm"
             >
               <Plus className="h-4 w-4" />
@@ -130,14 +142,12 @@ const Explore = () => {
           </Link>
         </div>
 
-        {/* Bottom Row - Search & Filters */}
+        {/* Bottom Row - Search Input & Filter Select */}
         <div className="flex flex-col sm:flex-row gap-4 w-full">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/80" />
             <Input
-              placeholder={
-                searchMode === "apis" ? "Search APIs..." : "Search users..."
-              }
+              placeholder={searchMode === "apis" ? "Search APIs..." : "Search users..."}
               className="pl-12 h-11 text-base shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -191,14 +201,14 @@ const Explore = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all" className="flex flex-col justify-center items-center mt-8">
+            <TabsContent value="all" className="mt-8">
               <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredApis.length > 0 ? (
                   filteredApis.map((api, index) => (
                     <ApiCard
                       key={index}
                       {...api}
-                      className="hover:scale-[1.02] transition-transform duration-200"
+                      className="hover:scale-105 transition-transform duration-200"
                     />
                   ))
                 ) : (
@@ -208,7 +218,7 @@ const Explore = () => {
                       No APIs found
                     </h3>
                     <p className="text-muted-foreground/80">
-                      Try adjusting your search or filters
+                      Try adjusting your search or filters.
                     </p>
                   </div>
                 )}
@@ -216,26 +226,50 @@ const Explore = () => {
             </TabsContent>
 
             <TabsContent value="trending" className="mt-8">
-              <div className="py-16 text-center space-y-4 bg-muted/30 rounded-2xl border border-dashed">
-                <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto" />
-                <h3 className="text-xl font-semibold text-muted-foreground">
-                  No trending APIs right now
-                </h3>
-                <p className="text-muted-foreground/80">
-                  Check back later for popular APIs
-                </p>
+              <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {trendingApis.length > 0 ? (
+                  trendingApis.map((api, index) => (
+                    <ApiCard
+                      key={index}
+                      {...api}
+                      className="hover:scale-105 transition-transform duration-200"
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-full py-16 text-center space-y-4 bg-muted/30 rounded-2xl border border-dashed">
+                    <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto" />
+                    <h3 className="text-xl font-semibold text-muted-foreground">
+                      No trending APIs right now
+                    </h3>
+                    <p className="text-muted-foreground/80">
+                      Check back later for popular APIs.
+                    </p>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
             <TabsContent value="recent" className="mt-8">
-              <div className="py-16 text-center space-y-4 bg-muted/30 rounded-2xl border border-dashed">
-                <FileJson className="h-12 w-12 text-muted-foreground mx-auto" />
-                <h3 className="text-xl font-semibold text-muted-foreground">
-                  No recent additions
-                </h3>
-                <p className="text-muted-foreground/80">
-                  New APIs will appear here
-                </p>
+              <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recentApis.length > 0 ? (
+                  recentApis.map((api, index) => (
+                    <ApiCard
+                      key={index}
+                      {...api}
+                      className="hover:scale-105 transition-transform duration-200"
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-full py-16 text-center space-y-4 bg-muted/30 rounded-2xl border border-dashed">
+                    <FileJson className="h-12 w-12 text-muted-foreground mx-auto" />
+                    <h3 className="text-xl font-semibold text-muted-foreground">
+                      No recent additions
+                    </h3>
+                    <p className="text-muted-foreground/80">
+                      New APIs will appear here soon.
+                    </p>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
@@ -247,7 +281,7 @@ const Explore = () => {
               <UserCard
                 key={index}
                 user={user}
-                className="hover:scale-[1.02] transition-transform duration-200"
+                className="hover:scale-105 transition-transform duration-200"
               />
             ))
           ) : (
@@ -257,7 +291,7 @@ const Explore = () => {
                 No users found
               </h3>
               <p className="text-muted-foreground/80">
-                Try adjusting your search query
+                Try adjusting your search query.
               </p>
             </div>
           )}

@@ -9,51 +9,65 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { UserPlus, User } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+
 export function UserCard({ user }) {
   return (
-    <Card className="w-full max-w-sm sm:max-w-md shadow-lg rounded-xl hover:shadow-xl transition-shadow mx-auto">
-      <CardHeader className="flex items-center flex-col gap-3 pb-3">
-        <Avatar className="h-24 w-24 border-2 border-primary/10">
-          <AvatarImage 
-            src={user.profileImage} 
-            alt={user.fullName} 
+    <Card className="w-full max-w-sm transition-all duration-200 hover:shadow-md">
+      <CardHeader className="pt-6 pb-4 text-center space-y-4">
+        <Avatar className="h-20 w-20 mx-auto ring-2 ring-muted">
+          <AvatarImage
+            src={user.profileImage}
+            alt={user.fullName}
             className="object-cover"
           />
-          <AvatarFallback className="text-2xl font-medium">
+          <AvatarFallback className="text-xl font-medium">
             {user.fullName.charAt(0)}
           </AvatarFallback>
         </Avatar>
-        <div className="text-center space-y-1">
-          <CardTitle className="text-xl font-bold">{user.fullName}</CardTitle>
-          <p className="text-sm text-muted-foreground">@{user.username}</p>
+        <div className="space-y-1">
+          <CardTitle className="text-lg font-semibold">{user.fullName}</CardTitle>
+          <Badge variant="secondary" className="font-normal">
+            @{user.username}
+          </Badge>
         </div>
       </CardHeader>
 
-      <CardContent className="grid grid-cols-3 gap-4 py-4 border-y">
-        <div className="flex flex-col items-center">
-          <p className="text-2xl font-bold text-primary">{user.starredApis.length}</p>
-          <p className="text-xs text-muted-foreground">STARS</p>
-        </div>
-        <div className="flex flex-col items-center">
-          <p className="text-2xl font-bold text-primary">{user.followers.length}</p>
-          <p className="text-xs text-muted-foreground">FOLLOWERS</p>
-        </div>
-        <div className="flex flex-col items-center">
-          <p className="text-2xl font-bold text-primary">{user.createdApis.length}</p>
-          <p className="text-xs text-muted-foreground">CREATED</p>
+      <CardContent className="px-6 py-4 border-y">
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="space-y-1 p-2">
+            <p className="text-xl font-bold">{user.starredApis.length}</p>
+            <p className="text-xs text-muted-foreground font-medium">Stars</p>
+          </div>
+          <div className="space-y-1 p-2 border-x">
+            <p className="text-xl font-bold">{user.followers.length}</p>
+            <p className="text-xs text-muted-foreground font-medium">Followers</p>
+          </div>
+          <div className="space-y-1 p-2">
+            <p className="text-xl font-bold">{user.createdApis.length}</p>
+            <p className="text-xs text-muted-foreground font-medium">Created</p>
+          </div>
         </div>
       </CardContent>
 
-      <CardFooter className="flex flex-col sm:flex-row justify-between items-center p-4 gap-2">
-        <Button variant="outline" size="sm" className="gap-2 px-3 w-full sm:w-auto">
+      <CardFooter className="p-4 flex flex-col sm:flex-row gap-3 justify-between">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full sm:w-auto flex items-center gap-2"
+        >
           <UserPlus className="h-4 w-4" />
-          <span>Follow</span>
+          Follow
         </Button>
         <Link to={`/profile/${user._id}`} className="w-full sm:w-auto">
-        <Button variant="default" size="sm" className="gap-2 px-3 w-full sm:w-auto">
-          <User className="h-4 w-4" />
-          <span>Profile</span>
-        </Button>
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="w-full flex items-center gap-2"
+          >
+            <User className="h-4 w-4" />
+            View Profile
+          </Button>
         </Link>
       </CardFooter>
     </Card>

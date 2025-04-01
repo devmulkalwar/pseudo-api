@@ -144,7 +144,7 @@ const Profile = () => {
         <TabsContent value="created" className="mt-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {createdApis.map((api, index) => (
-              <ApiCard key={index} {...api} isOwner={true} />
+              <ApiCard key={index} {...api}  />
             ))}
           </div>
         </TabsContent>

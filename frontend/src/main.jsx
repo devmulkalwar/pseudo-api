@@ -14,6 +14,7 @@ import Contact from "./pages/Contact";
 import ProtectedRoute from "./components/ProtectedRoute"; // Import the protected route
 import GlobalProvider from "./context/GlobalProvider";
 import ApiDetails from "./pages/ApiDetails";
+import EditApi from "./pages/EditApi";
 
 // Clerk Frontend API Key (Replace with your actual key)
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
         element: <ProtectedRoute />, // Wrapper for protected routes
         children: [
           { path: "create-api", element: <CreateApi /> },
+          {path: "edit-api/:id", element: <EditApi /> },
           { path: "profile/:id", element: <Profile /> },
         ],
       },

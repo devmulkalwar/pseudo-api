@@ -42,17 +42,17 @@ const Explore = () => {
   // Filtered APIs
   const filteredApis = useMemo(() => {
     if (!Array.isArray(apis)) return [];
-    
-    return apis.filter(api => {
+
+    return apis.filter((api) => {
       const searchLower = searchQuery.toLowerCase();
-      const matchesSearch = 
+      const matchesSearch =
         api.name?.toLowerCase().includes(searchLower) ||
         api.description?.toLowerCase().includes(searchLower) ||
-        api.tags?.some(tag => tag.toLowerCase().includes(searchLower)) ||
+        api.tags?.some((tag) => tag.toLowerCase().includes(searchLower)) ||
         api.endpoint?.toLowerCase().includes(searchLower);
 
-      const matchesFilter = 
-        filterType === "all" || 
+      const matchesFilter =
+        filterType === "all" ||
         (filterType === "rest" && api.type === "rest") ||
         (filterType === "graphql" && api.type === "graphql") ||
         (filterType === "public" && api.isPublic);
@@ -63,14 +63,14 @@ const Explore = () => {
 
   // Sorted APIs for different tabs
   const trendingApis = useMemo(() => {
-    return [...filteredApis].sort((a, b) => 
-      (b.starredBy?.length || 0) - (a.starredBy?.length || 0)
+    return [...filteredApis].sort(
+      (a, b) => (b.starredBy?.length || 0) - (a.starredBy?.length || 0)
     );
   }, [filteredApis]);
 
   const recentApis = useMemo(() => {
-    return [...filteredApis].sort((a, b) => 
-      new Date(b.createdAt) - new Date(a.createdAt)
+    return [...filteredApis].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
   }, [filteredApis]);
 
@@ -78,7 +78,7 @@ const Explore = () => {
   const filteredUsers = useMemo(() => {
     if (!Array.isArray(users)) return [];
 
-    return users.filter(user => {
+    return users.filter((user) => {
       const searchLower = searchQuery.toLowerCase();
       return (
         user.username?.toLowerCase().includes(searchLower) ||
@@ -102,7 +102,8 @@ const Explore = () => {
           Explore Mock APIs
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-          Browse community-built APIs or connect with developers in our ecosystem.
+          Browse community-built APIs or connect with developers in our
+          ecosystem.
         </p>
       </div>
 
@@ -130,7 +131,17 @@ const Explore = () => {
               Users
             </Button>
           </div>
-
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/80" />
+            <Input
+              placeholder={
+                searchMode === "apis" ? "Search APIs..." : "Search users..."
+              }
+              className="pl-12 h-11 text-base shadow-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           <Link to="/create-api">
             <Button
               className="h-9 px-4 rounded-lg gap-2 flex items-center"
@@ -140,36 +151,6 @@ const Explore = () => {
               <span className="hidden sm:block">Create API</span>
             </Button>
           </Link>
-        </div>
-
-        {/* Bottom Row - Search Input & Filter Select */}
-        <div className="flex flex-col sm:flex-row gap-4 w-full">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/80" />
-            <Input
-              placeholder={searchMode === "apis" ? "Search APIs..." : "Search users..."}
-              className="pl-12 h-11 text-base shadow-sm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          {searchMode === "apis" && (
-            <Select onValueChange={(value) => setFilterType(value)}>
-              <SelectTrigger className="w-full sm:w-[200px] h-11">
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
-                  <SelectValue placeholder="Filter by" />
-                </div>
-              </SelectTrigger>
-              <SelectContent className="min-w-[200px]">
-                <SelectItem value="all">All APIs</SelectItem>
-                <SelectItem value="rest">REST</SelectItem>
-                <SelectItem value="graphql">GraphQL</SelectItem>
-                <SelectItem value="public">Public</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
         </div>
       </div>
 

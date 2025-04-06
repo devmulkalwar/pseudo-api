@@ -270,6 +270,67 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
+  // Add these functions in GlobalProvider
+  const followUser = async (clerkUserId, token) => {
+    try {
+      if (!user?.clerkUserId) {
+        showToast("Please login to follow users", "error");
+        return;
+      }
+  
+      const response = await axios.post(
+        `${SERVER_URL}/users/follow/${clerkUserId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      // Update local user state with new following list
+      const updatedUsers = await getUsers();
+      const updatedUser = updatedUsers.find(u => u.clerkUserId === user.clerkUserId);
+      if (updatedUser) {
+        setUser(updatedUser);
+      }
+      
+      showToast("Successfully followed user", "success");
+      return response.data;
+    } catch (error) {
+      console.error("Follow Error:", error);
+      showToast(error.response?.data?.message || "Failed to follow user", "error");
+      throw error;
+    }
+  };
+  
+  const unfollowUser = async (clerkUserId, token) => {
+    try {
+      if (!user?.clerkUserId) {
+        showToast("Please login to unfollow users", "error");
+        return;
+      }
+  
+      const response = await axios.post(
+        `${SERVER_URL}/users/unfollow/${clerkUserId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      await getUsers(); // Refresh users list
+      showToast("Successfully unfollowed user", "info");
+      return response.data;
+    } catch (error) {
+      console.error("Unfollow Error:", error);
+      showToast(error.response?.data?.message || "Failed to unfollow user", "error");
+      throw error;
+    }
+  };
+
   // Initial data fetching
   useEffect(() => {
     const fetchData = async () => {
@@ -330,6 +391,10 @@ const GlobalProvider = ({ children }) => {
         setLoading,
         error,
         setError,
+
+        // Add followUser and unfollowUser to the context
+        followUser,
+        unfollowUser,
       }}
     >
       {children}

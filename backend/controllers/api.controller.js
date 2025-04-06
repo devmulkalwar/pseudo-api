@@ -83,7 +83,7 @@ export const editApi = async (req, res) => {
           description: updates.description,
           isPublic: updates.isPublic,
           category: updates.category,
-          tags: updates.tags
+          tags: updates.tags,
         }
       },
       { new: true, runValidators: true }

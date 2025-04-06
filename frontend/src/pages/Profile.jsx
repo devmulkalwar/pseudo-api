@@ -6,13 +6,17 @@ import { BookOpen, User, Star, Users, UserPlus } from "lucide-react";
 import { ApiCard } from "@/components/api-card";
 import useGlobalContext from "@/hooks/useGlobalContext";
 import { useParams } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 
 const Profile = () => {
   const { id } = useParams();
-  const { user, users, apis } = useGlobalContext();
+  const { getToken } = useAuth();
+  const { user, users, apis, followUser, unfollowUser, showToast, getUsers } = useGlobalContext();
   const [profileUser, setProfileUser] = useState(null);
   const [createdApis, setCreatedApis] = useState([]);
   const [starredApis, setStarredApis] = useState([]);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (id && users) {
@@ -45,6 +49,58 @@ const Profile = () => {
     }
   }, [apis, profileUser]);
 
+  // Update the useEffect that checks following status
+  useEffect(() => {
+    if (user?.following && profileUser?.clerkUserId) {
+      setIsFollowing(user.following.includes(profileUser.clerkUserId));
+    }
+  }, [user?.following, profileUser?.clerkUserId]);
+
+  // Add follow/unfollow handler
+  const handleFollowToggle = async () => {
+    if (!user) {
+      showToast("Please login to follow users", "error");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = await getToken();
+      
+      if (isFollowing) {
+        await unfollowUser(profileUser.clerkUserId, token);
+      } else {
+        await followUser(profileUser.clerkUserId, token);
+      }
+      
+      // Refresh users list
+      await getUsers();
+      setIsFollowing(!isFollowing);
+    } catch (error) {
+      console.error("Follow toggle error:", error);
+      showToast("Failed to update follow status", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update the follow button JSX
+  const FollowButton = () => (
+    <Button
+      variant={isFollowing ? "default" : "outline"}
+      className={`flex items-center gap-2 ${loading ? 'opacity-50' : ''}`}
+      onClick={handleFollowToggle}
+      disabled={loading}
+    >
+      {loading ? (
+        <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+      ) : (
+        <UserPlus className="h-4 w-4" />
+      )}
+      {isFollowing ? "Following" : "Follow"}
+    </Button>
+  );
+
   const getTotalStars = () => {
     return createdApis.reduce((total, api) => 
       total + (Array.isArray(api.starredBy) ? api.starredBy.length : 0), 0
@@ -76,25 +132,7 @@ const Profile = () => {
               </p>
             </div>
             {/* Only show Follow button if this profile is not the current logged in user */}
-            {profileUser._id !== user._id && (
-              <Button
-                variant="outline"
-                className="hidden md:flex px-6 py-2.5 text-base font-semibold"
-              >
-                Follow
-              </Button>
-            )}
-          </div>
-          {/* Conditional Follow Button for smaller screens */}
-          <div className="md:hidden flex justify-center mt-2">
-            {profileUser._id !== user._id && (
-              <Button
-                variant="outline"
-                className="inline-flex px-4 py-2 text-sm font-semibold"
-              >
-                Follow
-              </Button>
-            )}
+            {profileUser._id !== user?._id && <FollowButton />}
           </div>
         </div>
 

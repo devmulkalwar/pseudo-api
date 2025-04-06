@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Clipboard,
   Copy,
@@ -10,7 +10,9 @@ import {
   Code,
   Activity,
   AlertCircle,
-  Star
+  Star,
+  Edit,
+  Trash2
 } from "lucide-react";
 import {
   Card,
@@ -66,7 +68,8 @@ const generateFakeData = ({ schema, entries }) => {
 const ApiDetails = () => {
   const { id } = useParams();
   const { getToken } = useAuth();
-  const { getApiById, getUser, starApi, unstarApi, user, showToast } = useGlobalContext();
+  const navigate = useNavigate();
+  const { getApiById, getUser, starApi, unstarApi, user, showToast, deleteApi } = useGlobalContext();
   const [apiDetails, setApiDetails] = useState(null);
   const [creator, setCreator] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -147,6 +150,21 @@ const ApiDetails = () => {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      if (!window.confirm('Are you sure you want to delete this API?')) {
+        return;
+      }
+
+      const token = await getToken();
+      await deleteApi(id, token);
+      showToast("API deleted successfully", "success");
+      navigate('/explore');
+    } catch (error) {
+      showToast("Failed to delete API", "error");
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-3 py-4 max-w-6xl space-y-4">
@@ -194,10 +212,37 @@ const ApiDetails = () => {
     <div className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 max-w-6xl">
       {/* Header Section */}
       <div className="mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 mb-2">
-          <Terminal className="h-6 w-6 text-primary" />
-          {apiDetails.name}
-        </h1>
+        <div className="flex justify-between items-start gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 mb-2">
+            <Terminal className="h-6 w-6 text-primary" />
+            {apiDetails.name}
+          </h1>
+          
+          {/* Owner Actions */}
+          {user?._id === apiDetails.owner && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/edit-api/${id}`)}
+                className="flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                <span className="hidden sm:inline">Edit</span>
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDelete}
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Delete</span>
+              </Button>
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center gap-4 mt-2">
           <Button
             variant="ghost"

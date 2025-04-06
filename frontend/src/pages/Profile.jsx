@@ -52,7 +52,7 @@ const Profile = () => {
   };
 
   if (!profileUser) {
-    return <div>Loading...</div>;
+    return null;
   }
 
   return (

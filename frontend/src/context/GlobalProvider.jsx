@@ -120,6 +120,11 @@ const GlobalProvider = ({ children }) => {
 
   const deleteApi = async (apiId, token) => {
     try {
+      if (!user?._id) {
+        showToast("Please login to perform this action", "error");
+        return;
+      }
+  
       const response = await axios.delete(
         `${SERVER_URL}/pseudoapi/delete/${apiId}`,
         {
@@ -128,11 +133,13 @@ const GlobalProvider = ({ children }) => {
           },
         }
       );
+      
       await getApis(); // Refresh APIs list
       showToast("API deleted successfully", "success");
       return response.data;
     } catch (error) {
-      showToast(error.response?.data?.message || "Error deleting API", "error");
+      console.error("Delete API Error:", error);
+      showToast(error.response?.data?.message || "Failed to delete API", "error");
       throw error;
     }
   };

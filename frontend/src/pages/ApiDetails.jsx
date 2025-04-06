@@ -9,7 +9,8 @@ import {
   Tag,
   Code,
   Activity,
-  AlertCircle
+  AlertCircle,
+  Star
 } from "lucide-react";
 import {
   Card,
@@ -38,6 +39,7 @@ import {
   AlertDescription,
 } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@clerk/clerk-react";
 
 const generateFakeData = ({ schema, entries }) => {
   faker.seed(123);
@@ -63,13 +65,16 @@ const generateFakeData = ({ schema, entries }) => {
 
 const ApiDetails = () => {
   const { id } = useParams();
-  const { getApiById, getUser } = useGlobalContext();
+  const { getToken } = useAuth();
+  const { getApiById, getUser, starApi, unstarApi, user, showToast } = useGlobalContext();
   const [apiDetails, setApiDetails] = useState(null);
   const [creator, setCreator] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [relatedApis, setRelatedApis] = useState([]);
+  const [isStarred, setIsStarred] = useState(false);
+  const [starCount, setStarCount] = useState(0);
 
   // Fetch API details and creator info
   useEffect(() => {
@@ -109,9 +114,36 @@ const ApiDetails = () => {
     setRelatedApis(mockRelatedApis);
   }, [id]);
 
+  // Check star status
+  useEffect(() => {
+    if (apiDetails && user) {
+      setIsStarred(apiDetails.starredBy?.includes(user._id));
+      setStarCount(apiDetails.starredBy?.length || 0);
+    }
+  }, [apiDetails, user]);
+
   const copyEndpoint = () => {
     if (apiDetails && apiDetails.endpoint) {
       navigator.clipboard.writeText(apiDetails.endpoint);
+    }
+  };
+
+  const toggleStar = async () => {
+    try {
+      const token = await getToken();
+      if (isStarred) {
+        await unstarApi(id, token);
+        setIsStarred(false);
+        setStarCount(prev => prev - 1);
+        showToast("API removed from favorites", "info");
+      } else {
+        await starApi(id, token);
+        setIsStarred(true);
+        setStarCount(prev => prev + 1);
+        showToast("API added to favorites", "success");
+      }
+    } catch (error) {
+      showToast("Failed to update star status", "error");
     }
   };
 
@@ -166,6 +198,31 @@ const ApiDetails = () => {
           <Terminal className="h-6 w-6 text-primary" />
           {apiDetails.name}
         </h1>
+        <div className="flex items-center gap-4 mt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={toggleStar}
+          >
+            <Star
+              className={`h-4 w-4 ${
+                isStarred ? "fill-yellow-400 text-yellow-400" : ""
+              }`}
+            />
+            <span className="text-sm">{starCount}</span>
+          </Button>
+          {/* Add stats badges */}
+          <Badge variant="outline" className="text-xs">
+            {apiDetails.entries} entries
+          </Badge>
+          <Badge 
+            variant={apiDetails.isPublic ? "secondary" : "outline"} 
+            className="text-xs"
+          >
+            {apiDetails.isPublic ? "Public" : "Private"}
+          </Badge>
+        </div>
         <p className="text-sm text-muted-foreground max-w-3xl">
           {apiDetails.description}
         </p>

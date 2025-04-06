@@ -212,6 +212,11 @@ const GlobalProvider = ({ children }) => {
   // Star/Unstar API functions
   const starApi = async (apiId, token) => {
     try {
+      if (!user?._id) {
+        showToast("Please login to star APIs", "error");
+        return;
+      }
+
       const response = await axios.post(
         `${SERVER_URL}/pseudoapi/star-api/${apiId}`,
         { userId: user._id },
@@ -221,16 +226,24 @@ const GlobalProvider = ({ children }) => {
           },
         }
       );
+      
       await getApis(); // Refresh APIs list
+      showToast("API added to favorites", "success");
       return response.data;
     } catch (error) {
-      console.error("Error starring API:", error);
+      console.error("Star API Error:", error);
+      showToast(error.response?.data?.message || "Failed to star API", "error");
       throw error;
     }
   };
 
   const unstarApi = async (apiId, token) => {
     try {
+      if (!user?._id) {
+        showToast("Please login to unstar APIs", "error");
+        return;
+      }
+
       const response = await axios.post(
         `${SERVER_URL}/pseudoapi/unstar-api/${apiId}`,
         { userId: user._id },
@@ -240,10 +253,13 @@ const GlobalProvider = ({ children }) => {
           },
         }
       );
+      
       await getApis(); // Refresh APIs list
+      showToast("API removed from favorites", "info");
       return response.data;
     } catch (error) {
-      console.error("Error unstarring API:", error);
+      console.error("Unstar API Error:", error);
+      showToast(error.response?.data?.message || "Failed to unstar API", "error");
       throw error;
     }
   };

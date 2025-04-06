@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import useGlobalContext from "@/hooks/useGlobalContext";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 
 export function ApiCard({
   _id,
@@ -26,9 +27,10 @@ export function ApiCard({
   tags = [],
   category = "Ecommerce",
   createdAt,
-  starredBy = [],
+  starredBy = [], // Provide default empty array
 }) {
-  const { users, user,deleteApi } = useGlobalContext();
+  const { getToken } = useAuth();
+  const { users, user, deleteApi, starApi, unstarApi, showToast } = useGlobalContext();
   const [isStarred, setIsStarred] = useState(false);
   const [count, setCount] = useState(starredBy.length);
   const [ownerData, setOwnerData] = useState({});
@@ -36,21 +38,32 @@ export function ApiCard({
   const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
-    const result = users.find((user) => user._id === owner);
+    const result = users.find((u) => u._id === owner);
     setOwnerData(result || {});
     if (owner === user?._id) {
       setIsOwner(true);
     }
-    // Check if current user has starred this API
-    setIsStarred(starredBy.includes(user?._id));
+    // Safely check if user has starred
+    setIsStarred(Array.isArray(starredBy) && user?._id && starredBy.includes(user._id));
   }, [users, owner, user, starredBy]);
 
-  const toggleStar = () => {
-    setIsStarred((prev) => {
-      const newValue = !prev;
-      setCount((prevCount) => (newValue ? prevCount + 1 : prevCount - 1));
-      return newValue;
-    });
+  const toggleStar = async () => {
+    try {
+      const token = await getToken();
+      if (isStarred) {
+        await unstarApi(_id, token);
+        setIsStarred(false);
+        setCount(prev => prev - 1);
+        showToast("API removed from favorites", "info");
+      } else {
+        await starApi(_id, token);
+        setIsStarred(true);
+        setCount(prev => prev + 1);
+        showToast("API added to favorites", "success");
+      }
+    } catch (error) {
+      showToast("Failed to update star status", "error");
+    }
   };
 
   const handleCopyEndpoint = () => {

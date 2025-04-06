@@ -30,92 +30,107 @@ const Profile = () => {
     }
   }, [apis, profileUser]);
 
+  useEffect(() => {
+    if (apis && profileUser) {
+      // Set created APIs
+      const userApis = apis.filter((api) => api.owner === profileUser._id);
+      setCreatedApis(userApis);
+
+      // Set starred APIs - filter APIs where user's ID is in starredBy array
+      const userStarredApis = apis.filter((api) => 
+        Array.isArray(api.starredBy) && 
+        api.starredBy.includes(profileUser._id)
+      );
+      setStarredApis(userStarredApis);
+    }
+  }, [apis, profileUser]);
+
+  const getTotalStars = () => {
+    return createdApis.reduce((total, api) => 
+      total + (Array.isArray(api.starredBy) ? api.starredBy.length : 0), 0
+    );
+  };
+
   if (!profileUser) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto py-8 max-w-6xl">
       {/* Profile Header */}
       <div className="flex flex-col gap-4 w-full mb-6">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-          {/* Avatar Section */}
-          <Avatar className="h-20 w-20 md:h-32 md:w-32 border-2 mx-auto md:mx-0">
+          <Avatar className="h-32 w-32 border-2 mx-auto md:mx-0">
             <AvatarImage src={profileUser.profileImage} />
             <AvatarFallback>
-              <User className="h-8 w-8 md:h-12 md:w-12" />
+              {profileUser.fullName.charAt(0)}
             </AvatarFallback>
           </Avatar>
-
-          {/* Profile Info Section */}
-          <div className="flex flex-col flex-1 w-full">
-            {/* Name, Username & Conditional Follow Button */}
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-center md:text-left">
-                  {profileUser.fullName}
-                </h1>
-                <p className="text-sm md:text-base text-muted-foreground text-center md:text-left">
-                  @{profileUser.username}
-                </p>
-              </div>
-
-              {/* Only show Follow button if this profile is not the current logged in user */}
-              {profileUser._id !== user._id && (
-                <>
-                  <Button
-                    variant="outline"
-                    className="hidden md:flex px-6 py-2.5 text-base font-semibold"
-                  >
-                    Follow
-                  </Button>
-                  <div className="md:hidden flex justify-center mt-2">
-                    <Button
-                      variant="outline"
-                      className="inline-flex px-4 py-2 text-sm font-semibold"
-                    >
-                      Follow
-                    </Button>
-                  </div>
-                </>
-              )}
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex flex-col items-center md:items-start">
+              <h1 className="text-2xl md:text-3xl font-bold text-center md:text-left">
+                {profileUser.fullName}
+              </h1>
+              <p className="text-sm md:text-base text-muted-foreground text-center md:text-left">
+                @{profileUser.username}
+              </p>
             </div>
+            {/* Only show Follow button if this profile is not the current logged in user */}
+            {profileUser._id !== user._id && (
+              <Button
+                variant="outline"
+                className="hidden md:flex px-6 py-2.5 text-base font-semibold"
+              >
+                Follow
+              </Button>
+            )}
+          </div>
+          {/* Conditional Follow Button for smaller screens */}
+          <div className="md:hidden flex justify-center mt-2">
+            {profileUser._id !== user._id && (
+              <Button
+                variant="outline"
+                className="inline-flex px-4 py-2 text-sm font-semibold"
+              >
+                Follow
+              </Button>
+            )}
+          </div>
+        </div>
 
-            {/* Stats Section */}
-            <div className="flex flex-row justify-around md:justify-start md:gap-8 flex-wrap mt-4">
-              <div className="flex flex-col items-center">
-                <span className="font-bold text-lg md:text-xl">
-                  {profileUser.followers?.length || 0}
-                </span>
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4" />
-                  <span className="text-xs md:text-sm text-muted-foreground">
-                    Stars
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="font-bold text-lg md:text-xl">
-                  {profileUser.followers?.length || 0}
-                </span>
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  <span className="text-xs md:text-sm text-muted-foreground">
-                    Followers
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="font-bold text-lg md:text-xl">
-                  {profileUser.following?.length || 0}
-                </span>
-                <div className="flex items-center gap-1">
-                  <UserPlus className="h-4 w-4" />
-                  <span className="text-xs md:text-sm text-muted-foreground">
-                    Following
-                  </span>
-                </div>
-              </div>
+        {/* Stats Section */}
+        <div className="flex flex-row justify-around md:justify-start md:gap-8 flex-wrap mt-4">
+          <div className="flex flex-col items-center">
+            <span className="font-bold text-lg md:text-xl">
+              {getTotalStars()}
+            </span>
+            <div className="flex items-center gap-1">
+              <Star className="h-4 w-4" />
+              <span className="text-xs md:text-sm text-muted-foreground">
+                Stars
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="font-bold text-lg md:text-xl">
+              {profileUser.followers?.length || 0}
+            </span>
+            <div className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span className="text-xs md:text-sm text-muted-foreground">
+                Followers
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="font-bold text-lg md:text-xl">
+              {profileUser.following?.length || 0}
+            </span>
+            <div className="flex items-center gap-1">
+              <UserPlus className="h-4 w-4" />
+              <span className="text-xs md:text-sm text-muted-foreground">
+                Following
+              </span>
             </div>
           </div>
         </div>
@@ -142,20 +157,44 @@ const Profile = () => {
 
         {/* Created APIs Tab */}
         <TabsContent value="created" className="mt-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {createdApis.map((api, index) => (
-              <ApiCard key={index} {...api}  />
-            ))}
-          </div>
+          {createdApis.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {createdApis.map((api) => (
+                <ApiCard key={api._id} {...api} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+              <h3 className="text-lg font-semibold mb-1">No Created APIs</h3>
+              <p className="text-sm text-muted-foreground">
+                {profileUser._id === user?._id 
+                  ? "You haven't created any APIs yet" 
+                  : "This user hasn't created any APIs yet"}
+              </p>
+            </div>
+          )}
         </TabsContent>
 
         {/* Starred APIs Tab */}
         <TabsContent value="starred" className="mt-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {starredApis.map((api, index) => (
-              <ApiCard key={index} {...api} />
-            ))}
-          </div>
+          {starredApis.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {starredApis.map((api) => (
+                <ApiCard key={api._id} {...api} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Star className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+              <h3 className="text-lg font-semibold mb-1">No Starred APIs</h3>
+              <p className="text-sm text-muted-foreground">
+                {profileUser._id === user?._id 
+                  ? "You haven't starred any APIs yet" 
+                  : "This user hasn't starred any APIs yet"}
+              </p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

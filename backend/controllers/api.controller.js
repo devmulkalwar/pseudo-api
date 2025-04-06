@@ -21,8 +21,6 @@ export const createApi = async (req, res) => {
       category,
     } = req.body;
 
-    console.log("Request received:", req.body);
-
     if (!owner || !name || !ownerClerkId) {
       return res.status(400).json({
         success: false,
@@ -30,7 +28,7 @@ export const createApi = async (req, res) => {
       });
     }
 
-    // Create the API with required fields only
+    // Create new API document
     const newApi = new API({
       owner,
       ownerClerkId,
@@ -38,24 +36,15 @@ export const createApi = async (req, res) => {
       description: description || "",
       isPublic: isPublic ?? true,
       category: category || "other",
+      tags: Array.isArray(tags) ? tags : [],
+      starredBy: [], // Initialize empty array
     });
-    
-    // Set the endpoint using the SERVER_URL environment variable
+
+    // Set the endpoint
     newApi.endpoint = `${process.env.SERVER_URL}/api/pseudoapi/${newApi._id}`;
-    
-    console.log("Saving API:", newApi);
+
+    // Save the API
     await newApi.save();
-    
-    // Update tags and initialize starredBy
-    await API.collection.updateOne(
-      { _id: newApi._id },
-      { 
-        $set: { 
-          tags: Array.isArray(tags) ? tags : [],
-          starredBy: []
-        } 
-      }
-    );
 
     res.status(201).json({
       success: true,
@@ -67,7 +56,7 @@ export const createApi = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error Creating API",
-      error,
+      error: error.message,
     });
   }
 };
@@ -269,27 +258,47 @@ export const starApi = async (req, res) => {
   try {
     const { apiId } = req.params;
     const { userId } = req.body;
-    if (!userId) {
+
+    // Validate inputs
+    if (!userId || !apiId) {
       return res.status(400).json({
         success: false,
-        message: "User ID is required to star an API",
+        message: "Both User ID and API ID are required",
       });
     }
-    const api = await API.findById(apiId);
+
+    // Find and update the API using findOneAndUpdate
+    const api = await API.findOneAndUpdate(
+      { _id: apiId },
+      { 
+        $addToSet: { starredBy: userId } // Uses $addToSet to prevent duplicates
+      },
+      { 
+        new: true, // Return updated document
+        runValidators: true // Run schema validators
+      }
+    );
+
     if (!api) {
-      return res.status(404).json({ success: false, message: "API not found" });
+      return res.status(404).json({
+        success: false,
+        message: "API not found"
+      });
     }
-    if (!api.starredBy.includes(userId)) {
-      api.starredBy.push(userId);
-      await api.save();
-    }
-    res.status(200).json({
+
+    return res.status(200).json({
       success: true,
       message: "API starred successfully",
-      data: api,
+      data: api
     });
+
   } catch (error) {
-    return handleError(res, "Error starring API", error);
+    console.error("Star API Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error starring API",
+      error: error.message
+    });
   }
 };
 
@@ -298,26 +307,46 @@ export const unStarApi = async (req, res) => {
   try {
     const { apiId } = req.params;
     const { userId } = req.body;
-    if (!userId) {
+
+    // Validate inputs
+    if (!userId || !apiId) {
       return res.status(400).json({
         success: false,
-        message: "User ID is required to unstar an API",
+        message: "Both User ID and API ID are required",
       });
     }
-    const api = await API.findById(apiId);
-    if (!api) {
-      return res.status(404).json({ success: false, message: "API not found" });
-    }
-    api.starredBy = api.starredBy.filter(
-      (id) => id.toString() !== userId.toString()
+
+    // Find and update the API using findOneAndUpdate
+    const api = await API.findOneAndUpdate(
+      { _id: apiId },
+      { 
+        $pull: { starredBy: userId } // Remove userId from starredBy array
+      },
+      { 
+        new: true,
+        runValidators: true
+      }
     );
-    await api.save();
-    res.status(200).json({
+
+    if (!api) {
+      return res.status(404).json({
+        success: false,
+        message: "API not found"
+      });
+    }
+
+    return res.status(200).json({
       success: true,
       message: "API unstarred successfully",
-      data: api,
+      data: api
     });
+
   } catch (error) {
-    return handleError(res, "Error unstarring API", error);
+    console.error("Unstar API Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error unstarring API",
+      error: error.message
+    });
   }
 };

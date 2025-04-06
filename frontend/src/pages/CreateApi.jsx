@@ -151,17 +151,23 @@ const CreateApi = () => {
 
   // Function to call createApi on step 1 completion.
   const handleContinueToStructure = async () => {
-    const data = {
-      owner: user._id,
-      ownerClerkId: user.clerkUserId,
-      name: apiDetails.name,
-      description: apiDetails.description,
-      isPublic: apiDetails.isPublic,
-      tags: apiDetails.tags,
-      category: apiDetails.category,
-    };
-    setApiData(data);
-    setStep(2);
+    try {
+      const data = {
+        owner: user._id,
+        ownerClerkId: user.clerkUserId,
+        name: apiDetails.name,
+        description: apiDetails.description,
+        isPublic: apiDetails.isPublic,
+        tags: apiDetails.tags,
+        category: apiDetails.category,
+        starredBy: [] // Add this explicitly
+      };
+      setApiData(data);
+      setStep(2);
+    } catch (error) {
+      console.error("Error:", error);
+      setErrorMessage(error?.message || "Error preparing API data");
+    }
   };
 
   return (

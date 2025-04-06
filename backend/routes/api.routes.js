@@ -26,13 +26,15 @@ router.get("/get-api-by-user/:userId", getApiByUser);
 // Catch-all for serveFakeData should come last to prevent route conflicts
 router.get("/:apiId", serveFakeData);
 
-// Protected Routes (uncomment if needed)
-// router.use(requireAuth());
+// Protected Routes
+router.use(requireAuth());
 router.post("/create", createApi);
 router.put("/edit/:apiId", editApi);
 router.delete("/delete/:apiId", deleteApi);
 router.post("/schema/:apiId", defineSchema);
 router.put("/edit-schema/:apiId", editSchema);
+
+// Star/Unstar routes
 router.post("/star-api/:apiId", starApi);
 router.post("/unstar-api/:apiId", unStarApi);
 

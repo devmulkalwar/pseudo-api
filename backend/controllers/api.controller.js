@@ -67,11 +67,40 @@ export const editApi = async (req, res) => {
     const { apiId } = req.params;
     const updates = req.body;
 
-    const api = await API.findByIdAndUpdate(apiId, updates, { new: true });
-    if (!api)
-      return res.status(404).json({ success: false, message: "API not found" });
+    // Validate required fields
+    if (!updates.name) {
+      return res.status(400).json({
+        success: false,
+        message: "API name is required"
+      });
+    }
 
-    res.json({ success: true, message: "API updated successfully", api });
+    const api = await API.findOneAndUpdate(
+      { _id: apiId },
+      { 
+        $set: {
+          name: updates.name,
+          description: updates.description,
+          isPublic: updates.isPublic,
+          category: updates.category,
+          tags: updates.tags
+        }
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!api) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "API not found" 
+      });
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      message: "API updated successfully", 
+      data: api 
+    });
   } catch (error) {
     return handleError(res, "Error updating API", error);
   }
@@ -147,54 +176,49 @@ export const editSchema = async (req, res) => {
     const { apiId } = req.params;
     const { schema, entries } = req.body;
 
+    // Validate schema
     if (!Array.isArray(schema) || schema.length === 0) {
-      return res.status(400).json({ success: false, message: "Schema must be a non-empty array" });
-    }
-
-    if (schema.some((field) => !field.fieldName || !field.fieldType)) {
       return res.status(400).json({
         success: false,
-        message: "Each field must have 'fieldName' and 'fieldType'",
+        message: "Schema must be a non-empty array"
       });
     }
 
-    // Get the API to preserve existing schema fields
-    const api = await API.findById(apiId);
-    if (!api)
-      return res.status(404).json({ success: false, message: "API not found" });
-
-    const existingSchemaMap = new Map(
-      api.schema.map((field) => [field._id.toString(), field])
-    );
-
-    const updatedSchema = schema.map((field) =>
-      field._id && existingSchemaMap.has(field._id)
-        ? {
-            ...existingSchemaMap.get(field._id),
-            fieldName: field.fieldName,
-            fieldType: field.fieldType,
-          }
-        : { _id: new mongoose.Types.ObjectId(), ...field }
-    );
-
-    // Use a direct update to avoid Mongoose validation issues
-    await API.collection.updateOne(
-      { _id: api._id },
-      { 
-        $set: { 
-          schema: updatedSchema,
-          entries: entries !== undefined ? entries : api.entries
-        } 
+    // Validate schema fields
+    for (const field of schema) {
+      if (!field.fieldName || !field.fieldType) {
+        return res.status(400).json({
+          success: false,
+          message: "Each field must have fieldName and fieldType"
+        });
       }
+    }
+
+    const api = await API.findOneAndUpdate(
+      { _id: apiId },
+      { 
+        $set: {
+          schema,
+          entries: Math.min(1000, Math.max(1, entries))
+        }
+      },
+      { new: true, runValidators: true }
     );
 
-    res.json({
+    if (!api) {
+      return res.status(404).json({
+        success: false,
+        message: "API not found"
+      });
+    }
+
+    res.status(200).json({
       success: true,
       message: "Schema updated successfully",
-      schema: updatedSchema,
+      data: api
     });
   } catch (error) {
-    return handleError(res, "Error editing schema", error);
+    return handleError(res, "Error updating schema", error);
   }
 };
 

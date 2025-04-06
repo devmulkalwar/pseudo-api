@@ -34,7 +34,20 @@ import { faker } from "@faker-js/faker";
 import CodeBlock from "@/components/CodeBlock";
 import useGlobalContext from "@/hooks/useGlobalContext";
 import { useAuth } from "@clerk/clerk-react";
+import { debounce } from "lodash";
 
+
+const API_CATEGORIES = [
+  { value: "commerce", label: "Commerce" },
+  { value: "person", label: "Person" },
+  { value: "animal", label: "Animal" },
+  { value: "location", label: "Location" },
+  { value: "finance", label: "Finance" },
+  { value: "company", label: "Company" },
+  { value: "internet", label: "Internet" },
+  { value: "vehicle", label: "Vehicle" },
+  { value: "other", label: "Other" },
+];
 const EditApi = () => {
   const { id } = useParams();
   const [step, setStep] = useState(1);
@@ -48,13 +61,15 @@ const EditApi = () => {
   const [entries, setEntries] = useState(10);
   const [errorMessage, setErrorMessage] = useState("");
   const [showDialog, setShowDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const { getApiById, updateApi, updateSchema, user } = useGlobalContext();
+  const { getApiById, editApi, editSchema, user, showToast } = useGlobalContext();
   const { getToken } = useAuth();
 
   useEffect(() => {
     const loadApiData = async () => {
       try {
+        setIsLoading(true);
         const token = await getToken();
         const response = await getApiById(id, token);
         const api = response.data;
@@ -64,7 +79,8 @@ const EditApi = () => {
           isPublic: api.isPublic,
           name: api.name,
           description: api.description,
-          tags: api.tags,
+          tags: api.tags || [],
+          category: api.category || 'other'
         });
         
         // Set schema fields
@@ -76,15 +92,20 @@ const EditApi = () => {
         setFields(initialFields);
         
         // Set entries
-        setEntries(api.entries);
+        setEntries(api.entries || 10);
+        setErrorMessage("");
 
       } catch (err) {
-        setErrorMessage("Failed to load API data");
+        const errorMsg = err?.response?.data?.message || "Failed to load API data";
+        setErrorMessage(errorMsg);
+        showToast(errorMsg, "error");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     if (id) loadApiData();
-  }, [id]);
+  }, [id, getToken, getApiById, showToast]);
 
   const addField = () => {
     setFields([
@@ -114,33 +135,53 @@ const EditApi = () => {
 
   const handleUpdateApi = async () => {
     try {
+      if (!apiDetails.name) {
+        showToast("API name is required", "error");
+        return;
+      }
+  
       const token = await getToken();
       
       // Update basic API info
       const apiData = {
-        ...apiDetails,
-        owner: user._id,
-        ownerClerkId: user.clerkUserId
+        name: apiDetails.name,
+        description: apiDetails.description,
+        isPublic: apiDetails.isPublic,
+        category: apiDetails.category || 'other',
+        tags: apiDetails.tags,
       };
-      await updateApi(id, apiData, token);
-
+  
+      await editApi(id, apiData, token);
+  
       // Update schema
-      const schemaPayload = {
-        entries: entries,
+      const schemaData = {
+        entries,
         schema: fields.map(({ fieldName, fieldType }) => ({
-          fieldName,
+          fieldName: fieldName || `field_${Date.now()}`,
           fieldType: `faker.${fieldType}`
         }))
       };
-      await updateSchema(id, schemaPayload, token);
-
+  
+      await editSchema(id, schemaData, token);
+      showToast("API updated successfully", "success");
       setShowDialog(true);
       setErrorMessage("");
-
+  
     } catch (err) {
-      setErrorMessage(err?.message || "Error updating API");
+      const errorMsg = err?.response?.data?.message || err?.message || "Error updating API";
+      setErrorMessage(errorMsg);
+      showToast(errorMsg, "error");
     }
   };
+  
+  // Add debounced field update function
+  const debouncedFieldUpdate = debounce((index, value, field) => {
+    setFields(prevFields => {
+      const newFields = [...prevFields];
+      newFields[index][field] = value;
+      return newFields;
+    });
+  }, 100);
 
   const handleAddTag = (newTag) => {
     if (apiDetails.tags.length >= 5) return;
@@ -149,6 +190,14 @@ const EditApi = () => {
       tags: [...new Set([...apiDetails.tags, newTag])],
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="container max-w-4xl mx-auto py-6 px-4 sm:px-6 space-y-8">

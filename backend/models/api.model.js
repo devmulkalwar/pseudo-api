@@ -31,10 +31,19 @@ const apiSchema = new Schema(
       type: [String],
       default: [],
     },
-    starredBy: [{
-      type: Schema.Types.ObjectId,
-      ref: 'User'
+    schema: [{
+      fieldName: String,
+      fieldType: String
     }],
+    entries: {
+      type: Number,
+      default: 10,
+      max: 1000
+    },
+    starredBy: {
+      type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+      default: []
+    }
   },
   { timestamps: true }
 );

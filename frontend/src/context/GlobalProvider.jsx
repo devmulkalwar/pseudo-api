@@ -107,15 +107,14 @@ const GlobalProvider = ({ children }) => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
           },
         }
       );
       await getApis(); // Refresh APIs list
-      showToast("API updated successfully", "success");
       return response.data;
     } catch (error) {
-      showToast(error.response?.data?.message || "Error updating API", "error");
-      throw error;
+      throw error.response?.data || error;
     }
   };
 
@@ -166,13 +165,13 @@ const GlobalProvider = ({ children }) => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
           },
         }
       );
       return response.data;
     } catch (error) {
-      console.error("Error editing schema:", error);
-      throw error;
+      throw error.response?.data || error;
     }
   };
 

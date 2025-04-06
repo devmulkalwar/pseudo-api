@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Star, Pencil, Trash, Share2, Copy, Check, Clock } from "lucide-react";
+import { Star, Pencil, Trash, Share2, Copy, Check, Clock, ExternalLink } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import useGlobalContext from "@/hooks/useGlobalContext";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Link } from "react-router-dom";
 
 export function ApiCard({
   _id,
@@ -26,10 +27,8 @@ export function ApiCard({
   category = "Ecommerce",
   createdAt,
   starredBy = [],
-  onEdit = () => {},
-  onDelete = () => {},
 }) {
-  const { users, user } = useGlobalContext();
+  const { users, user,deleteApi } = useGlobalContext();
   const [isStarred, setIsStarred] = useState(false);
   const [count, setCount] = useState(starredBy.length);
   const [ownerData, setOwnerData] = useState({});
@@ -42,7 +41,9 @@ export function ApiCard({
     if (owner === user?._id) {
       setIsOwner(true);
     }
-  }, [users, owner, user]);
+    // Check if current user has starred this API
+    setIsStarred(starredBy.includes(user?._id));
+  }, [users, owner, user, starredBy]);
 
   const toggleStar = () => {
     setIsStarred((prev) => {
@@ -73,9 +74,18 @@ export function ApiCard({
     }
   };
 
+  const onDelete = async () => {
+    await deleteApi(_id);
+  }
+
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
   return (
     <Card className="w-full max-w-md transition-all duration-200 hover:shadow-md">
-      <CardHeader className="space-y-2 p-4">
+      <CardHeader className="space-y-2 p-4 pb-3">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -91,36 +101,47 @@ export function ApiCard({
             <CardDescription className="line-clamp-2 text-sm">
               {description}
             </CardDescription>
-            <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {new Date(createdAt).toLocaleDateString()}
-              </span>
           </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-full"
-                  onClick={handleShareApi}
-                >
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Share API</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          
+          <div className="flex items-center gap-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full"
+                    onClick={toggleStar}
+                  >
+                    <Star
+                      className={`h-4 w-4 ${
+                        isStarred ? "fill-yellow-400 text-yellow-400" : ""
+                      }`}
+                    />
+                    <span className="sr-only">Star API</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{isStarred ? "Unstar" : "Star"}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <span className="text-xs text-muted-foreground">{count}</span>
+          </div>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-3 px-4 pb-3">
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <div className="flex items-center">
-            <span className="mr-1 font-medium">{entries}</span>
-            entries
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center">
+              <span className="mr-1 font-medium">{entries}</span>
+              entries
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="h-3 w-3" />
+              {formatDate(createdAt)}
+            </div>
           </div>
-          <div className="flex items-center">
+          <div>
             {isPublic ? (
               <Badge variant="secondary" className="text-xs px-2 py-0">
                 Public
@@ -147,7 +168,7 @@ export function ApiCard({
                   onClick={handleCopyEndpoint}
                 >
                   {isCopied ? (
-                    <Check className="h-3 w-3 text-primary" />
+                    <Check className="h-3 w-3 text-green-500" />
                   ) : (
                     <Copy className="h-3 w-3" />
                   )}
@@ -169,29 +190,31 @@ export function ApiCard({
         )}
       </CardContent>
 
-      <CardFooter className="flex items-center justify-between border-t p-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <Avatar className="h-8 w-8 border">
-            <AvatarImage
-              src={ownerData?.profileImage || "/default-avatar.png"}
-              alt={ownerData?.fullName || "User"}
-            />
-            <AvatarFallback className="text-xs">
-              {ownerData?.fullName?.[0] || "U"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <p className="text-sm font-medium truncate">
-              {ownerData?.fullName || "Unknown"}
-            </p>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>@{ownerData?.username || "unknown"}</span>
+      <CardFooter className="flex flex-col space-y-3 border-t p-4">
+        <div className="flex items-center justify-between w-full">
+          <Link to={`/profile/${owner}`} className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <Avatar className="h-8 w-8 border">
+              <AvatarImage
+                src={ownerData?.profileImage || "/default-avatar.png"}
+                alt={ownerData?.fullName || "User"}
+              />
+              <AvatarFallback className="text-xs">
+                {ownerData?.fullName?.[0] || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">
+                {ownerData?.fullName || "Unknown"}
+              </p>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>@{ownerData?.username || "unknown"}</span>
+              </div>
             </div>
           </div>
-        </div>
+          </Link>
 
-        <div className="flex items-center gap-1">
-          {isOwner && (
+          <div className="flex items-center gap-1">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -199,57 +222,63 @@ export function ApiCard({
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 rounded-full"
-                    onClick={onEdit}
+                    onClick={handleShareApi}
                   >
-                    <Pencil className="h-4 w-4" />
+                    <Share2 className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Edit API</TooltipContent>
+                <TooltipContent>Share API</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          )}
-          
-          {isOwner && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-full"
-                    onClick={onDelete}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Delete API</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          
-          <div className="flex flex-col items-center">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-full"
-                    onClick={toggleStar}
-                  >
-                    <Star
-                      className={`h-4 w-4 ${
-                        isStarred ? "fill-primary stroke-primary" : ""
-                      }`}
-                    />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Star API</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <span className="text-xs text-muted-foreground">{count}</span>
+            
+            {isOwner && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to={`/edit-api/${_id}`}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit API</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            
+            {isOwner && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full text-red-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={onDelete}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Delete API</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
         </div>
+        
+        <Link to={`/api-details/${_id}`} className="w-full">
+          <Button 
+            variant="default" 
+            className="w-full flex items-center justify-center gap-2"
+          >
+            <span>View Details</span>
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

@@ -117,19 +117,13 @@ const ApiDetails = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-6xl space-y-6">
-        <Skeleton className="h-9 w-1/2" />
-        <Skeleton className="h-5 w-2/3" />
-        <div className="grid gap-6 md:grid-cols-[1fr_300px]">
-          <div className="space-y-6">
-            <Skeleton className="h-[200px]" />
-            <Skeleton className="h-[400px]" />
-            <Skeleton className="h-[300px]" />
-          </div>
-          <div className="space-y-6">
-            <Skeleton className="h-[200px]" />
-            <Skeleton className="h-[150px]" />
-          </div>
+      <div className="container mx-auto px-3 py-4 max-w-6xl space-y-4">
+        <Skeleton className="h-8 w-full max-w-sm" />
+        <Skeleton className="h-4 w-full max-w-md" />
+        <div className="grid gap-4">
+          <Skeleton className="h-36" />
+          <Skeleton className="h-64" />
+          <Skeleton className="h-48" />
         </div>
       </div>
     );
@@ -137,7 +131,7 @@ const ApiDetails = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-3 py-4 max-w-6xl">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
@@ -149,10 +143,12 @@ const ApiDetails = () => {
 
   if (!apiDetails) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="p-4 bg-yellow-100 text-yellow-700 rounded-lg">
-          No API details found
-        </div>
+      <div className="container mx-auto px-3 py-4 max-w-6xl">
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Not Found</AlertTitle>
+          <AlertDescription>No API details found</AlertDescription>
+        </Alert>
       </div>
     );
   }
@@ -163,205 +159,209 @@ const ApiDetails = () => {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl space-y-6">
+    <div className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 max-w-6xl">
       {/* Header Section */}
-      <div className="space-y-2">
-        <h1 className="text-4xl md:text-4xl font-bold tracking-tight flex items-center gap-3">
-          <Terminal className="h-9 w-9 text-primary" />
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 mb-2">
+          <Terminal className="h-6 w-6 text-primary" />
           {apiDetails.name}
         </h1>
-        <p className="text-xl text-muted-foreground max-w-3xl">
+        <p className="text-sm text-muted-foreground max-w-3xl">
           {apiDetails.description}
         </p>
       </div>
 
-      {/* Main Content */}
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-        {/* Left Column */}
-        <div className="space-y-6">
-          {/* API Endpoint Card */}
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Database className="h-5 w-5 text-primary" />
-                API Endpoint
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                <code className="font-mono text-sm break-all">
-                  {apiDetails.endpoint}
-                </code>
-                <Button
-                  onClick={copyEndpoint}
-                  variant="ghost"
-                  size="sm"
-                  className="hover:bg-background"
-                >
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copy
-                </Button>
+      {/* Top Info Cards - Rearranged for mobile */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        {/* Creator Card - Moved to top for mobile */}
+        <Card className="md:col-span-1">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <User className="h-4 w-4 text-primary" />
+              Creator
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {creator && (
+              <div className="flex flex-row items-center gap-3 mb-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={creator.profileImage} />
+                  <AvatarFallback>{creator.fullName[0]}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-medium text-sm">{creator.fullName}</h3>
+                  <p className="text-xs text-muted-foreground">@{creator.username}</p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            )}
+            <div className="flex gap-2">
+              <Button
+                variant={isFollowing ? "default" : "outline"}
+                size="sm"
+                onClick={() => setIsFollowing(!isFollowing)}
+                className="text-xs flex-1"
+              >
+                {isFollowing ? "Following" : "Follow"}
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="text-xs flex-1"
+              >
+                <Link to={`/profile/${creator?.username}`}>View Profile</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Data Schema Card */}
+        {/* API Endpoint Card */}
+        <Card className="md:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <Database className="h-4 w-4 text-primary" />
+              API Endpoint
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-2 bg-muted rounded-md gap-2">
+              <code className="font-mono text-xs break-all">
+                {apiDetails.endpoint}
+              </code>
+              <Button
+                onClick={copyEndpoint}
+                variant="ghost"
+                size="sm"
+                className="whitespace-nowrap h-8"
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Copy
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        {/* Left Column - Main content */}
+        <div className="lg:col-span-3 space-y-4">
+          {/* Data Schema Table */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-primary" />
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                <Database className="h-4 w-4 text-primary" />
                 Data Schema
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="rounded-lg border overflow-hidden">
-                <Table>
-                  <TableHeader className="bg-muted">
-                    <TableRow>
-                      <TableHead className="w-1/2">Field Name</TableHead>
-                      <TableHead>Type</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {apiDetails.schema?.map((field, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">
-                          {field.fieldName}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="font-mono">
-                            {field.fieldType}
-                          </Badge>
-                        </TableCell>
+            <CardContent className="pt-0">
+              <div className="overflow-x-auto -mx-2 sm:mx-0">
+                <div className="min-w-fit">
+                  <Table className="w-full">
+                    <TableHeader className="bg-muted">
+                      <TableRow>
+                        <TableHead className="w-1/2 font-medium">Field Name</TableHead>
+                        <TableHead className="font-medium">Type</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {apiDetails.schema?.map((field, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium py-2">
+                            {field.fieldName}
+                          </TableCell>
+                          <TableCell className="py-2">
+                            <Badge variant="secondary" className="font-mono text-xs">
+                              {field.fieldType}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Example Response Card */}
+          {/* Example Response */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Code className="h-5 w-5 text-primary" />
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                <Code className="h-4 w-4 text-primary" />
                 Example Response
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <CodeBlock
                 code={JSON.stringify(sampleData, null, 2)}
                 language="json"
-                className="max-h-96 overflow-auto"
+                className="max-h-56 sm:max-h-72 overflow-auto text-xs rounded-md"
               />
             </CardContent>
           </Card>
 
-          {/* Related APIs Card */}
+          {/* Related APIs - Grid for better mobile layout */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Code className="h-5 w-5 text-primary" />
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                <Code className="h-4 w-4 text-primary" />
                 Related APIs
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
-              {relatedApis.map((api) => (
-                <Card
-                  key={api.id}
-                  className="hover:bg-muted/50 transition-colors"
-                >
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">
-                      <Link to={`/apis/${api.id}`} className="hover:underline">
-                        {api.name}
-                      </Link>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      {api.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {api.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                    <code className="text-xs font-mono text-primary block truncate">
-                      {api.endpoint}
-                    </code>
-                  </CardContent>
-                </Card>
-              ))}
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {relatedApis.map((api) => (
+                  <Card key={api.id} className="hover:bg-muted/50 transition-colors border-muted">
+                    <CardHeader className="p-3">
+                      <CardTitle className="text-xs sm:text-sm">
+                        <Link to={`/apis/${api.id}`} className="hover:underline">
+                          {api.name}
+                        </Link>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 p-3 pt-0">
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {api.description}
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {api.tags.map((tag) => (
+                          <Badge key={tag} variant="outline" className="text-xs px-1.5 py-0.5">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                      <code className="text-xs font-mono text-primary block truncate">
+                        {api.endpoint}
+                      </code>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column */}
-        <div className="space-y-6">
-          {/* Creator Card */}
+        {/* Right Column - Side info */}
+        <div className="lg:col-span-1 space-y-4">
+          {/* Stats Card */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" />
-                Creator
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {creator && (
-                <>
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={creator.profileImage} />
-                      <AvatarFallback>{creator.fullName[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="space-y-1">
-                      <h3 className="font-semibold">{creator.fullName}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        @{creator.username}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {creator.email}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={isFollowing ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setIsFollowing(!isFollowing)}
-                      className="flex-1"
-                    >
-                      {isFollowing ? "Following" : "Follow"}
-                    </Button>
-                    <Button asChild variant="outline" size="sm" className="flex-1">
-                      <Link to={`/profile/${creator.username}`}>View Profile</Link>
-                    </Button>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Statistics Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-primary" />
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                <Activity className="h-4 w-4 text-primary" />
                 Statistics
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Total Entries</span>
-                <Badge variant="outline">{apiDetails.entries}</Badge>
+            <CardContent className="pt-0 space-y-2">
+              <div className="flex justify-between items-center py-1 border-b">
+                <span className="text-xs">Total Entries</span>
+                <Badge variant="outline" className="text-xs">
+                  {apiDetails.entries}
+                </Badge>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Created</span>
-                <span className="text-sm text-muted-foreground">
+              <div className="flex justify-between items-center py-1">
+                <span className="text-xs">Created</span>
+                <span className="text-xs text-muted-foreground">
                   {new Date(apiDetails.createdAt).toLocaleDateString()}
                 </span>
               </div>
@@ -371,16 +371,20 @@ const ApiDetails = () => {
           {/* Tags Card */}
           {apiDetails.tags?.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Tag className="h-5 w-5 text-primary" />
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                  <Tag className="h-4 w-4 text-primary" />
                   Tags
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
+              <CardContent className="pt-0">
+                <div className="flex flex-wrap gap-1">
                   {apiDetails.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary">
+                    <Badge 
+                      key={tag} 
+                      variant="secondary"
+                      className="text-xs px-1.5 py-0.5"
+                    >
                       {tag}
                     </Badge>
                   ))}

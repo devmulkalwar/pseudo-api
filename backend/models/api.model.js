@@ -20,6 +20,11 @@ const apiSchema = new Schema(
       type: String,
       maxlength: 500,
     },
+    category: {
+      type: String,
+      enum: ['commerce', 'person', 'animal', 'location', 'finance', 'company', 'internet', 'vehicle', 'other'],
+      default: 'other'
+    },
     endpoint: {
       type: String,
       unique: true,

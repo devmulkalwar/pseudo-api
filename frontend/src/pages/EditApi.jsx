@@ -212,6 +212,27 @@ const EditApi = () => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select
+                value={apiDetails.category}
+                onValueChange={(value) =>
+                  setApiDetails({ ...apiDetails, category: value })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {API_CATEGORIES.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <label className="text-sm font-medium">Tags</label>
                 <span className="text-xs text-muted-foreground">
@@ -297,18 +318,25 @@ const EditApi = () => {
                   placeholder="Field name"
                   value={field.fieldName}
                   onChange={(e) => {
+                    const newValue = e.target.value;
+                    // Immediate UI update
                     const newFields = [...fields];
-                    newFields[index].fieldName = e.target.value;
+                    newFields[index].fieldName = newValue;
                     setFields(newFields);
+                    // Debounced state update
+                    debouncedFieldUpdate(index, newValue, 'fieldName');
                   }}
                 />
                 <div className="flex items-center gap-2">
                   <Select
                     value={field.fieldType}
                     onValueChange={(value) => {
+                      // Immediate UI update
                       const newFields = [...fields];
                       newFields[index].fieldType = value;
                       setFields(newFields);
+                      // Debounced state update
+                      debouncedFieldUpdate(index, value, 'fieldType');
                     }}
                   >
                     <SelectTrigger>

@@ -18,6 +18,7 @@ export const createApi = async (req, res) => {
       isPublic,
       tags,
       ownerClerkId,
+      category,
     } = req.body;
 
     console.log("Request received:", req.body);
@@ -36,6 +37,7 @@ export const createApi = async (req, res) => {
       name,
       description: description || "",
       isPublic: isPublic ?? true,
+      category: category || "other",
     });
     
     // Set the endpoint using the SERVER_URL environment variable

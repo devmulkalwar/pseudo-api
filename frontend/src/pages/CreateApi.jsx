@@ -12,7 +12,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Plus,
   Trash2,
@@ -39,7 +39,19 @@ import CodeBlock from "@/components/CodeBlock";
 import useGlobalContext from "@/hooks/useGlobalContext";
 import { useAuth } from "@clerk/clerk-react";
 
+const API_CATEGORIES = [
+  { value: "commerce", label: "Commerce" },
+  { value: "person", label: "Person" },
+  { value: "animal", label: "Animal" },
+  { value: "location", label: "Location" },
+  { value: "finance", label: "Finance" },
+  { value: "company", label: "Company" },
+  { value: "internet", label: "Internet" },
+  { value: "vehicle", label: "Vehicle" },
+  { value: "other", label: "Other" },
+];
 const CreateApi = () => {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [fields, setFields] = useState([
     { id: 1, fieldName: "fullName", fieldType: "person.fullName" },
@@ -49,6 +61,7 @@ const CreateApi = () => {
     name: "",
     description: "",
     tags: [],
+    category: "other",
   });
   const [entries, setEntries] = useState(10);
   const [generatedEndpoint, setGeneratedEndpoint] = useState("");
@@ -122,7 +135,7 @@ const CreateApi = () => {
       setGeneratedEndpoint(
         `${import.meta.env.VITE_SERVER_URL}/pseudoapi/${endpointId}`
       );
-      setShowDialog(true);
+      navigate(`/api-details/${endpointId}`);
     } catch (err) {
       setErrorMessage(err?.message || "Error creating API. Please try again.");
     }
@@ -145,6 +158,7 @@ const CreateApi = () => {
       description: apiDetails.description,
       isPublic: apiDetails.isPublic,
       tags: apiDetails.tags,
+      category: apiDetails.category,
     };
     setApiData(data);
     setStep(2);
@@ -220,6 +234,27 @@ const CreateApi = () => {
                   setApiDetails({ ...apiDetails, description: e.target.value })
                 }
               />
+            </div>
+            {/* Category Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select
+                value={apiDetails.category}
+                onValueChange={(value) =>
+                  setApiDetails({ ...apiDetails, category: value })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {API_CATEGORIES.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Tags */}

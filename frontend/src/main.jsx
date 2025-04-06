@@ -30,6 +30,7 @@ const router = createBrowserRouter([
       { path: "docs", element: <Documentation /> },
       { path: "contact", element: <Contact /> },
       { path: "about", element: <About /> },
+      { path: "privacy-policy", element: <Error /> },
       { path: "api-details/:id", element: <ApiDetails /> },
 
       // Protected Routes (Require Authentication)
@@ -37,7 +38,7 @@ const router = createBrowserRouter([
         element: <ProtectedRoute />, // Wrapper for protected routes
         children: [
           { path: "create-api", element: <CreateApi /> },
-          {path: "edit-api/:id", element: <EditApi /> },
+          { path: "edit-api/:id", element: <EditApi /> },
           { path: "profile/:id", element: <Profile /> },
         ],
       },

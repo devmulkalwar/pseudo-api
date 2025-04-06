@@ -12,6 +12,7 @@ import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useAuth } 
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
 import Footer from "./components/Footer";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function App() {
   const location = useLocation();
@@ -88,6 +89,7 @@ export default function App() {
          <Footer/>
         </SidebarInset>
       </SidebarProvider>
+      <Toaster />
     </ThemeProvider>
   );
 }

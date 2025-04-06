@@ -26,66 +26,61 @@ import useGlobalContext from "@/hooks/useGlobalContext";
 export function AppSidebar(props) {
   const { user } = useGlobalContext();
 
-  if (!user) {
-    return null;
-  }
+  const publicNavItems = [
+    {
+      title: "Home",
+      url: "/",
+      icon: Home,
+      isActive: true,
+    },
+    {
+      title: "Explore",
+      url: "/explore",
+      icon: Compass,
+    },
+    {
+      title: "Documentation",
+      url: "/docs",
+      icon: BookOpen,
+    },
+    {
+      title: "About",
+      url: "/about",
+      icon: Info,
+    },
+    {
+      title: "Contact",
+      url: "/contact",
+      icon: Mail,
+    },
+  ];
 
   const data = {
-    navMain: [
-      {
-        title: "Home",
-        url: "/",
-        icon: Home,
-        isActive: true,
-      },
-      {
-        title: "Explore",
-        url: "/explore",
-        icon: Compass,
-      },
-      {
-        title: "Create API",
-        url: "/create-api",
-        icon: PlusCircle,
-      },
-      {
-        title: "Documentation",
-        url: "/docs",
-        icon: BookOpen,
-      },
-      {
-        title: "About",
-        url: "/about",
-        icon: Info,
-      },
-      {
-        title: "Contact",
-        url: "/contact",
-        icon: Mail,
-      },
-      {
-        title: "Profile",
-        url: `/profile/${user._id}`,
-        icon: User,
-      },
-    ],
-    navSecondary: [
-      {
-        title: "Settings",
-        url: "/settings",
-        icon: Settings2,
-      },
-    ],
+    navMain: user 
+      ? [...publicNavItems,
+          {
+            title: "Create API",
+            url: "/create-api",
+            icon: PlusCircle,
+          },
+          {
+            title: "Profile",
+            url: `/profile/${user._id}`,
+            icon: User,
+          }
+        ]
+      : publicNavItems  
   };
+
   return (
     <Sidebar collapsible="icon" className="border-r-0" {...props}>
-    <SidebarHeader className={`flex h-16 items-center  border-b ${open ? "justify-center" : "justify-between"}`}>
-      <Logo/>
-    </SidebarHeader>
-    <SidebarContent>
-      <NavMain items={data.navMain} />
-    </SidebarContent>
-    <SidebarRail />
-  </Sidebar>
+      <SidebarHeader className={`flex h-16 items-center  border-b ${open ? "justify-center" : "justify-between"}`}>
+        <Logo/>
+      </SidebarHeader>
+      <SidebarContent>
+        <NavMain items={data.navMain} />
+      </SidebarContent>
+      <SidebarRail />
+    </Sidebar>
   );
 }

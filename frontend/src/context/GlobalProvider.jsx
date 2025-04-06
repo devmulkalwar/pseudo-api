@@ -2,22 +2,56 @@ import { useEffect, useState } from "react";
 import GlobalContext from "./GlobalContext";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 const GlobalProvider = ({ children }) => {
-  // Clerk Authentication
   const { isLoaded, userId, getToken } = useAuth();
+  const { toast } = useToast();
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState([]);
-  const [apis, setApis] = useState([]); // Initialize as an empty array
-  const [loading, setLoading] = useState(true); // Start with loading true
+  const [apis, setApis] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
-  // Updated getUser to decide which endpoint to call based on the format of the ID.
+  // Add this toast utility function
+  const showToast = (message, type = "default") => {
+    const toastTypes = {
+      success: {
+        title: "Success",
+        variant: "default",
+        className: "bg-green-500",
+      },
+      error: {
+        title: "Error",
+        variant: "destructive",
+      },
+      warning: {
+        title: "Warning",
+        variant: "default",
+        className: "bg-yellow-500",
+      },
+      info: {
+        title: "Info",
+        variant: "default",
+        className: "bg-blue-500",
+      },
+    };
+
+    const { title, variant, className } = toastTypes[type] || toastTypes.default;
+
+    toast({
+      title,
+      description: message,
+      variant,
+      className,
+    });
+  };
+
+  // User-related functions
   const getUser = async (id) => {
     try {
       let response;
-      // If the id starts with "user_", it's a Clerk ID; otherwise assume it's a MongoDB id.
       if (id.startsWith("user_")) {
         response = await axios.get(`${SERVER_URL}/users/clerk/${id}`);
         setUser(response.data);
@@ -36,12 +70,14 @@ const GlobalProvider = ({ children }) => {
     try {
       const response = await axios.get(`${SERVER_URL}/users`);
       setUsers(response.data);
+      return response.data;
     } catch (error) {
       console.error("Error fetching users:", error);
       setError(error);
     }
   };
 
+  // API-related functions
   const createApi = async (apiData, token) => {
     try {
       const response = await axios.post(
@@ -54,18 +90,59 @@ const GlobalProvider = ({ children }) => {
           },
         }
       );
+      await getApis(); // Refresh APIs list
+      showToast("API created successfully", "success");
       return response.data;
     } catch (error) {
-      console.error("Error creating API:", error);
+      showToast(error.response?.data?.message || "Error creating API", "error");
       throw error.response?.data || error.message;
     }
   };
 
-  const defineSchema = async (id, data, token) => {
+  const editApi = async (apiId, updates, token) => {
+    try {
+      const response = await axios.put(
+        `${SERVER_URL}/pseudoapi/edit/${apiId}`,
+        updates,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      await getApis(); // Refresh APIs list
+      showToast("API updated successfully", "success");
+      return response.data;
+    } catch (error) {
+      showToast(error.response?.data?.message || "Error updating API", "error");
+      throw error;
+    }
+  };
+
+  const deleteApi = async (apiId, token) => {
+    try {
+      const response = await axios.delete(
+        `${SERVER_URL}/pseudoapi/delete/${apiId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      await getApis(); // Refresh APIs list
+      showToast("API deleted successfully", "success");
+      return response.data;
+    } catch (error) {
+      showToast(error.response?.data?.message || "Error deleting API", "error");
+      throw error;
+    }
+  };
+
+  const defineSchema = async (apiId, schemaData, token) => {
     try {
       const response = await axios.post(
-        `${SERVER_URL}/pseudoapi/schema/${id}`,
-        data,
+        `${SERVER_URL}/pseudoapi/schema/${apiId}`,
+        schemaData,
         {
           headers: {
             "Content-Type": "application/json",
@@ -73,9 +150,28 @@ const GlobalProvider = ({ children }) => {
           },
         }
       );
+      showToast("Schema defined successfully", "success");
       return response.data;
     } catch (error) {
-      console.error("Error defining schema:", error);
+      showToast(error.response?.data?.message || "Error defining schema", "error");
+      throw error;
+    }
+  };
+
+  const editSchema = async (apiId, schemaData, token) => {
+    try {
+      const response = await axios.put(
+        `${SERVER_URL}/pseudoapi/edit-schema/${apiId}`,
+        schemaData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error editing schema:", error);
       throw error;
     }
   };
@@ -83,10 +179,8 @@ const GlobalProvider = ({ children }) => {
   const getApis = async () => {
     try {
       const response = await axios.get(`${SERVER_URL}/pseudoapi/get-all-Api`);
-      // Adjust if your backend wraps the data differently
-      setApis(
-        Array.isArray(response.data) ? response.data : response.data.data
-      );
+      setApis(Array.isArray(response.data) ? response.data : response.data.data);
+      return response.data;
     } catch (error) {
       console.error("Error fetching APIs:", error);
       setError(error);
@@ -115,12 +209,50 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
-  // Fetch all initial data on load
+  // Star/Unstar API functions
+  const starApi = async (apiId, token) => {
+    try {
+      const response = await axios.post(
+        `${SERVER_URL}/pseudoapi/star-api/${apiId}`,
+        { userId: user._id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      await getApis(); // Refresh APIs list
+      return response.data;
+    } catch (error) {
+      console.error("Error starring API:", error);
+      throw error;
+    }
+  };
+
+  const unstarApi = async (apiId, token) => {
+    try {
+      const response = await axios.post(
+        `${SERVER_URL}/pseudoapi/unstar-api/${apiId}`,
+        { userId: user._id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      await getApis(); // Refresh APIs list
+      return response.data;
+    } catch (error) {
+      console.error("Error unstarring API:", error);
+      throw error;
+    }
+  };
+
+  // Initial data fetching
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (userId) {
-          // Fetch current user using the provided userId
           await getUser(userId);
         }
         await getUsers();
@@ -135,12 +267,6 @@ const GlobalProvider = ({ children }) => {
     fetchData();
   }, [userId]);
 
-  useEffect(() => {
-    getToken().then((token) => {
-      console.log("JWT token:", token);
-    });
-  }, []);
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-background">
@@ -152,21 +278,36 @@ const GlobalProvider = ({ children }) => {
   return (
     <GlobalContext.Provider
       value={{
+        // User-related state and functions
         user,
         setUser,
-        getUser,
         users,
         setUsers,
+        getUser,
+        getUsers,
+        
+        // API-related state and functions
         apis,
         setApis,
+        createApi,
+        editApi,
+        deleteApi,
+        defineSchema,
+        editSchema,
+        getApis,
         getApiById,
+        getApiByUser,
+        starApi,
+        unstarApi,
+        
+        // Add showToast to the context
+        showToast,
+        
+        // Utility state
         loading,
         setLoading,
         error,
         setError,
-        createApi,
-        defineSchema,
-        getApiByUser
       }}
     >
       {children}

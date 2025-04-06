@@ -26,6 +26,7 @@ import {
   FileJson,
   Zap,
   User,
+  X,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApiCard } from "@/components/api-card";
@@ -33,11 +34,23 @@ import { UserCard } from "@/components/user-card";
 import { Link } from "react-router-dom";
 import useGlobalContext from "@/hooks/useGlobalContext";
 
+const API_CATEGORIES = [
+  { value: "commerce", label: "Commerce" },
+  { value: "person", label: "Person" },
+  { value: "animal", label: "Animal" },
+  { value: "location", label: "Location" },
+  { value: "finance", label: "Finance" },
+  { value: "company", label: "Company" },
+  { value: "internet", label: "Internet" },
+  { value: "vehicle", label: "Vehicle" },
+  { value: "other", label: "Other" },
+];
+
 const Explore = () => {
   const { users, apis } = useGlobalContext();
   const [searchMode, setSearchMode] = useState("apis");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   // Filtered APIs
   const filteredApis = useMemo(() => {
@@ -51,15 +64,12 @@ const Explore = () => {
         api.tags?.some((tag) => tag.toLowerCase().includes(searchLower)) ||
         api.endpoint?.toLowerCase().includes(searchLower);
 
-      const matchesFilter =
-        filterType === "all" ||
-        (filterType === "rest" && api.type === "rest") ||
-        (filterType === "graphql" && api.type === "graphql") ||
-        (filterType === "public" && api.isPublic);
+      const matchesCategory =
+        categoryFilter === "all" || api.category === categoryFilter;
 
-      return matchesSearch && matchesFilter;
+      return matchesSearch && matchesCategory;
     });
-  }, [apis, searchQuery, filterType]);
+  }, [apis, searchQuery, categoryFilter]);
 
   // Sorted APIs for different tabs
   const trendingApis = useMemo(() => {
@@ -152,6 +162,41 @@ const Explore = () => {
             </Button>
           </Link>
         </div>
+
+        {/* Add Category Filter */}
+        {searchMode === "apis" && (
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Category:</span>
+            </div>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {API_CATEGORIES.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {categoryFilter !== "all" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCategoryFilter("all")}
+                className="h-8 px-2"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Clear
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Main Content */}

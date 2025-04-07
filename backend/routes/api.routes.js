@@ -14,7 +14,7 @@ import {
   starApi,
   unStarApi,
 } from "../controllers/api.controller.js";
-
+import cors from "cors";
 const router = express.Router();
 
 // Public Routes
@@ -24,7 +24,11 @@ router.get("/get-schema/:apiId", getSchema);
 router.get("/get-api-by-user/:userId", getApiByUser);
 
 // Catch-all for serveFakeData should come last to prevent route conflicts
-router.get("/:apiId", serveFakeData);
+router.get(
+  "/:apiId",
+  cors({ origin: "*" }), 
+  serveFakeData
+);
 
 // Protected Routes
 router.use(requireAuth());

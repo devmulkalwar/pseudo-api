@@ -28,28 +28,30 @@ export const createApi = async (req, res) => {
       });
     }
 
-    // Create new API document
-    const newApi = new API({
+    // Create document using a plain object
+    const apiDoc = {
       owner,
       ownerClerkId,
       name,
       description: description || "",
       isPublic: isPublic ?? true,
       category: category || "other",
-      tags: Array.isArray(tags) ? tags : [],
-      starredBy: [], // Initialize empty array
-    });
+      tags: [],
+      schema: [],
+      starredBy: []
+    };
 
-    // Set the endpoint
-    newApi.endpoint = `${process.env.SERVER_URL}/api/pseudoapi/${newApi._id}`;
-
-    // Save the API
-    await newApi.save();
+    // Use insertOne instead of create
+    const newApi = await API.collection.insertOne(apiDoc);
+    
+    const apiUrl = `${process.env.SERVER_URL}/api/pseudoapi/${newApi.insertedId}`;
+    const api = await API.updateOne({ _id: newApi.insertedId }, { endpoint: apiUrl });
+    console.log(api);
 
     res.status(201).json({
       success: true,
-      apiUrl: `${process.env.SERVER_URL}${newApi.endpoint}`,
-      apiId: newApi._id,
+      apiUrl: `${process.env.SERVER_URL}/api/pseudoapi/${newApi.insertedId}`,
+      apiId: newApi.insertedId,
     });
   } catch (error) {
     console.error("Error Creating API:", error);

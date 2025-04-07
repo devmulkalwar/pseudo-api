@@ -28,24 +28,32 @@ const apiSchema = new Schema(
       default: "other",
     },
     tags: {
-      type: [String],
-      default: [],
+      type: Array,
+      default: []
     },
-    schema: [{
-      fieldName: String,
-      fieldType: String
-    }],
+    schema: {
+      type: Array,
+      default: []
+    },
     entries: {
       type: Number,
       default: 10,
       max: 1000
     },
     starredBy: {
-      type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+      type: Array,
       default: []
+    },
+    endpoint:{
+      type: String,
+      required: true,
+      default: "",
     }
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    strict: false 
+  }
 );
 
 const API = mongoose.model("API", apiSchema);

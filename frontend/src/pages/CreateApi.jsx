@@ -67,7 +67,7 @@ const CreateApi = () => {
   const [generatedEndpoint, setGeneratedEndpoint] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [apiData, setApiData] = useState("");
+  const [apiData, setApiData] = useState({});
   const [schema, setSchema] = useState("");
 
   // Global Context function for creating API
@@ -158,9 +158,10 @@ const CreateApi = () => {
         name: apiDetails.name,
         description: apiDetails.description,
         isPublic: apiDetails.isPublic,
-        tags: apiDetails.tags,
+        tags: apiDetails.tags || [],
         category: apiDetails.category,
-        starredBy: [] // Add this explicitly
+        schema: [],
+        starredBy: []
       };
       setApiData(data);
       setStep(2);

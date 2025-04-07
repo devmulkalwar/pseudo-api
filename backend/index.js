@@ -11,6 +11,8 @@ import webhookRouter from "./routes/webhook.route.js";
 dotenv.config();
 
 const app = express();
+
+mongoose.set('strictQuery', false);
 connectDB();
 
 // Global CORS middleware

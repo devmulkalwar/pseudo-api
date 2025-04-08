@@ -3,7 +3,6 @@ import { Star, Pencil, Trash, Share2, Copy, Check, Clock, ExternalLink } from "l
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -19,7 +18,6 @@ import { useAuth } from "@clerk/clerk-react";
 export function ApiCard({
   _id,
   name,
-  description,
   endpoint,
   entries,
   isPublic,
@@ -27,7 +25,7 @@ export function ApiCard({
   tags = [],
   category = "Ecommerce",
   createdAt,
-  starredBy = [], // Provide default empty array
+  starredBy = [],
 }) {
   const { getToken } = useAuth();
   const { users, user, deleteApi, starApi, unstarApi, showToast } = useGlobalContext();
@@ -43,7 +41,6 @@ export function ApiCard({
     if (owner === user?._id) {
       setIsOwner(true);
     }
-    // Safely check if user has starred
     setIsStarred(Array.isArray(starredBy) && user?._id && starredBy.includes(user._id));
   }, [users, owner, user, starredBy]);
 
@@ -78,45 +75,91 @@ export function ApiCard({
       navigator
         .share({
           title: name,
-          text: description,
           url: apiUrl,
         })
         .catch(console.error);
     } else {
       navigator.clipboard.writeText(apiUrl);
+      showToast("Link copied to clipboard", "success");
     }
   };
 
   const onDelete = async () => {
-    await deleteApi(_id);
+    try {
+      if (!window.confirm('Are you sure you want to delete this API?')) {
+        return;
+      }
+      const token = await getToken();
+      await deleteApi(_id, token);
+      showToast("API deleted successfully", "success");
+    } catch (error) {
+      console.log(error);
+      showToast("Failed to delete API", "error");
+    }
   }
 
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    try {
+      if (!dateString) return "Just now";
+      
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.error("Invalid date:", dateString);
+        return "Just now";
+      }
+      
+      const now = new Date();
+      const diff = now.getTime() - date.getTime();
+      
+      // Less than a minute
+      if (diff < 60000) return "Just now";
+      
+      // Less than an hour
+      if (diff < 3600000) {
+        const minutes = Math.floor(diff / 60000);
+        return `${minutes}m ago`;
+      }
+      
+      // Less than a day
+      if (diff < 86400000) {
+        const hours = Math.floor(diff / 3600000);
+        return `${hours}h ago`;
+      }
+      
+      // Less than a week
+      if (diff < 604800000) {
+        const days = Math.floor(diff / 86400000);
+        return `${days}d ago`;
+      }
+      
+      // Format as date
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      return date.toLocaleDateString(undefined, options);
+      
+    } catch (error) {
+      console.error("Date formatting error:", error);
+      return "Just now";
+    }
   };
 
   return (
-    <Card className="w-full max-w-md transition-all duration-200 hover:shadow-md">
-      <CardHeader className="space-y-2 p-4 pb-3">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-xl font-semibold tracking-tight truncate">
+    <Card className="flex flex-col w-full h-full transition-all duration-200 hover:shadow-md">
+      <CardHeader className="p-4 pb-3 flex-shrink-0">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <CardTitle className="text-lg sm:text-xl font-semibold tracking-tight truncate max-w-full">
                 {name}
               </CardTitle>
               {category && (
-                <Badge variant="outline" className="capitalize text-xs">
+                <Badge variant="outline" className="capitalize text-xs whitespace-nowrap">
                   {category}
                 </Badge>
               )}
             </div>
-            <CardDescription className="line-clamp-2 text-sm">
-              {description}
-            </CardDescription>
           </div>
           
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -142,9 +185,9 @@ export function ApiCard({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3 px-4 pb-3">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-4">
+      <CardContent className="flex-grow space-y-3 px-4 pt-0 pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             <div className="flex items-center">
               <span className="mr-1 font-medium">{entries}</span>
               entries
@@ -177,7 +220,7 @@ export function ApiCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 rounded-full"
+                  className="h-6 w-6 rounded-full flex-shrink-0"
                   onClick={handleCopyEndpoint}
                 >
                   {isCopied ? (
@@ -192,42 +235,44 @@ export function ApiCard({
           </TooltipProvider>
         </div>
 
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
+        <div className="min-h-8">
+          {tags && tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {tags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
       </CardContent>
 
-      <CardFooter className="flex flex-col space-y-3 border-t p-4">
+      <CardFooter className="mt-auto flex flex-col space-y-3 border-t p-4">
         <div className="flex items-center justify-between w-full">
-          <Link to={`/profile/${owner}`} className="flex items-center gap-3 min-w-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <Avatar className="h-8 w-8 border">
-              <AvatarImage
-                src={ownerData?.profileImage || "/default-avatar.png"}
-                alt={ownerData?.fullName || "User"}
-              />
-              <AvatarFallback className="text-xs">
-                {ownerData?.fullName?.[0] || "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="text-sm font-medium truncate">
-                {ownerData?.fullName || "Unknown"}
-              </p>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>@{ownerData?.username || "unknown"}</span>
+          <Link to={`/profile/${owner}`} className="flex items-center gap-3 min-w-0 max-w-[60%]">
+            <div className="flex items-center gap-3 min-w-0">
+              <Avatar className="h-8 w-8 border flex-shrink-0">
+                <AvatarImage
+                  src={ownerData?.profileImage || "/default-avatar.png"}
+                  alt={ownerData?.fullName || "User"}
+                />
+                <AvatarFallback className="text-xs">
+                  {ownerData?.fullName?.[0] || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {ownerData?.fullName || "Unknown"}
+                </p>
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <span className="truncate">@{ownerData?.username || "unknown"}</span>
+                </div>
               </div>
             </div>
-          </div>
           </Link>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

@@ -124,7 +124,6 @@ const GlobalProvider = ({ children }) => {
         showToast("Please login to perform this action", "error");
         return;
       }
-  
       const response = await axios.delete(
         `${SERVER_URL}/pseudoapi/delete/${apiId}`,
         {
@@ -288,7 +287,7 @@ const GlobalProvider = ({ children }) => {
         }
       );
       
-      // Update local user state with new following list
+      // Update local users state immediately
       const updatedUsers = await getUsers();
       const updatedUser = updatedUsers.find(u => u.clerkUserId === user.clerkUserId);
       if (updatedUser) {
@@ -321,7 +320,13 @@ const GlobalProvider = ({ children }) => {
         }
       );
       
-      await getUsers(); // Refresh users list
+      // Update local user state immediately
+      const updatedUsers = await getUsers();
+      const updatedUser = updatedUsers.find(u => u.clerkUserId === user.clerkUserId);
+      if (updatedUser) {
+        setUser(updatedUser);
+      }
+      
       showToast("Successfully unfollowed user", "info");
       return response.data;
     } catch (error) {

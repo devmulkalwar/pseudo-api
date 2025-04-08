@@ -302,6 +302,7 @@ const ApiDetails = () => {
                 size="sm"
                 onClick={() => setIsFollowing(!isFollowing)}
                 className="text-xs flex-1"
+                disabled={loading || user?._id === apiDetails.owner}
               >
                 {isFollowing ? "Following" : "Follow"}
               </Button>

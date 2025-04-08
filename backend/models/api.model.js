@@ -48,11 +48,25 @@ const apiSchema = new Schema(
       type: String,
       required: true,
       default: "",
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
     }
   },
   { 
-    timestamps: true,
-    strict: false 
+    timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' },
+    toJSON: {
+      transform: function(doc, ret) {
+        ret.createdAt = ret.createdAt?.toISOString();
+        ret.updatedAt = ret.updatedAt?.toISOString();
+        return ret;
+      }
+    }
   }
 );
 

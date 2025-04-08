@@ -12,7 +12,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Plus,
   Trash2,
@@ -49,6 +49,7 @@ const API_CATEGORIES = [
   { value: "other", label: "Other" },
 ];
 const EditApi = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [step, setStep] = useState(1);
   const [fields, setFields] = useState([]);
@@ -164,7 +165,7 @@ const EditApi = () => {
   
       await editSchema(id, schemaData, token);
       showToast("API updated successfully", "success");
-      setShowDialog(true);
+      navigate(`/api-details/${id}`);
       setErrorMessage("");
   
     } catch (err) {
@@ -440,20 +441,6 @@ const EditApi = () => {
           </CardContent>
         </Card>
       )}
-
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>API Updated Successfully!</DialogTitle>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setShowDialog(false)}>Close</Button>
-            <Link to={`/apis/${id}`}>
-              <Button variant="default">View API</Button>
-            </Link>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

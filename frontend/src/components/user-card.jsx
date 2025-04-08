@@ -21,12 +21,15 @@ export function UserCard({ user: profileUser }) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Update useEffect to check following status whenever users list updates
+  // Add dependency on users list to update following status
   useEffect(() => {
     if (user?.following && profileUser?.clerkUserId) {
-      setIsFollowing(user.following.includes(profileUser.clerkUserId));
+      const isUserFollowing = user.following.includes(profileUser.clerkUserId);
+      if (isFollowing !== isUserFollowing) {
+        setIsFollowing(isUserFollowing);
+      }
     }
-  }, [user?.following, profileUser?.clerkUserId]);
+  }, [user?.following, profileUser?.clerkUserId, isFollowing]);
 
   const handleFollowToggle = async () => {
     if (!user) {

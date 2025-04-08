@@ -36,9 +36,11 @@ export const createApi = async (req, res) => {
       description: description || "",
       isPublic: isPublic ?? true,
       category: category || "other",
-      tags: [],
+      tags: tags || [],
       schema: [],
-      starredBy: []
+      starredBy: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     // Use insertOne instead of create

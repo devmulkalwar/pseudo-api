@@ -232,7 +232,7 @@ const GlobalProvider = ({ children }) => {
         }
       );
       
-      await getApis(); // Refresh APIs list
+      await getApis(); 
       showToast("API added to favorites", "success");
       return response.data;
     } catch (error) {
@@ -259,7 +259,7 @@ const GlobalProvider = ({ children }) => {
         }
       );
       
-      await getApis(); // Refresh APIs list
+      await getApis();
       showToast("API removed from favorites", "info");
       return response.data;
     } catch (error) {

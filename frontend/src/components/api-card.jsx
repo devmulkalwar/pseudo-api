@@ -168,6 +168,7 @@ export function ApiCard({
                     size="icon"
                     className="h-8 w-8 rounded-full"
                     onClick={toggleStar}
+                    disabled={!user}
                   >
                     <Star
                       className={`h-4 w-4 ${

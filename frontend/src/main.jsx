@@ -32,14 +32,14 @@ const router = createBrowserRouter([
       { path: "about", element: <About /> },
       { path: "privacy-policy", element: <Error /> },
       { path: "api-details/:id", element: <ApiDetails /> },
-
+      { path: "profile/:id", element: <Profile /> },
+     
       // Protected Routes (Require Authentication)
       {
         element: <ProtectedRoute />, // Wrapper for protected routes
         children: [
           { path: "create-api", element: <CreateApi /> },
           { path: "edit-api/:id", element: <EditApi /> },
-          { path: "profile/:id", element: <Profile /> },
         ],
       },
     ],

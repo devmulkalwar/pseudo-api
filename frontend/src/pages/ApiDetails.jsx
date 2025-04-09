@@ -249,6 +249,7 @@ const ApiDetails = () => {
             size="sm"
             className="flex items-center gap-2"
             onClick={toggleStar}
+            disabled={!user}
           >
             <Star
               className={`h-4 w-4 ${
@@ -302,7 +303,7 @@ const ApiDetails = () => {
                 size="sm"
                 onClick={() => setIsFollowing(!isFollowing)}
                 className="text-xs flex-1"
-                disabled={loading || user?._id === apiDetails.owner}
+                disabled={!user|| loading || user?._id === apiDetails.owner}
               >
                 {isFollowing ? "Following" : "Follow"}
               </Button>

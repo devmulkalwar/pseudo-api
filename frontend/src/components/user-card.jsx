@@ -102,8 +102,10 @@ export function UserCard({ user: profileUser }) {
           size="sm"
           className="w-full sm:w-auto flex items-center gap-2"
           onClick={handleFollowToggle}
-          disabled={loading || user?._id === profileUser._id}
+          disabled= {!user || loading || user?._id === profileUser._id } 
+          
         >
+         
           {loading ? (
             <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
           ) : (

@@ -145,7 +145,7 @@ const Profile = () => {
       variant={isFollowing ? "default" : "outline"}
       className={`flex items-center gap-1 sm:gap-2 px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm ${loading ? 'opacity-50' : ''}`}
       onClick={handleFollowToggle}
-      disabled={loading}
+      disabled={!user || loading}
     >
       {loading ? (
         <div className="h-3 w-3 sm:h-4 sm:w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />

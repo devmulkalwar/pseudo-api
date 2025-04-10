@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import emailjs from '@emailjs/browser';
 import { 
   ChevronDown, 
   Mail, 
@@ -48,15 +49,40 @@ import {
 import { Separator } from '@/components/ui/separator';
 
 export default function Contact() {
+  const form = useRef();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setShowConfirmation(true);
+    setIsLoading(true);
+
+    try {
+      const result = await emailjs.sendForm(
+        import.meta.env.VITE_EMAIL_SERVICE_ID,
+        import.meta.env.VITE_EMAIL_TEMPLATE_ID,
+        form.current,
+        import.meta.env.VITE_EMAIL_PUBLIC_KEY
+      );
+
+      if (result.text === 'OK') {
+        setShowConfirmation(true);
+        // Reset form
+        setName('');
+        setEmail('');
+        setSubject('');
+        setMessage('');
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      alert('Failed to send message. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -176,11 +202,12 @@ export default function Contact() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form ref={form} onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Name</Label>
                       <Input 
+                        name="user_name"
                         placeholder="Your name" 
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -189,6 +216,7 @@ export default function Contact() {
                     <div className="space-y-2">
                       <Label>Email <span className="text-primary">*</span></Label>
                       <Input 
+                        name="user_email"
                         type="email" 
                         placeholder="you@company.com" 
                         required
@@ -200,7 +228,7 @@ export default function Contact() {
 
                   <div className="space-y-2">
                     <Label>Subject <span className="text-primary">*</span></Label>
-                    <Select required value={subject} onValueChange={setSubject}>
+                    <Select name="subject" required value={subject} onValueChange={setSubject}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a subject" />
                       </SelectTrigger>
@@ -216,6 +244,7 @@ export default function Contact() {
                   <div className="space-y-2">
                     <Label>Message <span className="text-primary">*</span></Label>
                     <Textarea 
+                      name="message"
                       placeholder="Describe your request in detail..." 
                       rows={6} 
                       required
@@ -225,9 +254,18 @@ export default function Contact() {
                   </div>
 
                   <div className="flex justify-end">
-                    <Button type="submit" className="gap-2">
-                      <Send className="h-4 w-4" />
-                      Send Message
+                    <Button type="submit" className="gap-2" disabled={isLoading}>
+                      {isLoading ? (
+                        <>
+                          <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4" />
+                          Send Message
+                        </>
+                      )}
                     </Button>
                   </div>
                 </form>

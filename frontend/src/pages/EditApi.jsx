@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,7 +36,6 @@ import useGlobalContext from "@/hooks/useGlobalContext";
 import { useAuth } from "@clerk/clerk-react";
 import { debounce } from "lodash";
 
-
 const API_CATEGORIES = [
   { value: "commerce", label: "Commerce" },
   { value: "person", label: "Person" },
@@ -48,6 +47,38 @@ const API_CATEGORIES = [
   { value: "vehicle", label: "Vehicle" },
   { value: "other", label: "Other" },
 ];
+
+// Create a memoized field component
+const Field = memo(({ field, index, onFieldChange, onRemove, fakerTypes }) => (
+  <div className="grid grid-cols-2 gap-2">
+    <Input
+      placeholder="Field name"
+      value={field.fieldName}
+      onChange={(e) => onFieldChange(index, "fieldName", e.target.value)}
+    />
+    <div className="flex items-center gap-2">
+      <Select
+        value={field.fieldType}
+        onValueChange={(value) => onFieldChange(index, "fieldType", value)}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select data type" />
+        </SelectTrigger>
+        <SelectContent>
+          {fakerTypes.map((type) => (
+            <SelectItem key={type} value={type} className="text-sm">
+              {type}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Button variant="ghost" size="icon" onClick={() => onRemove(field.id)}>
+        <Trash2 className="h-4 w-4 text-destructive" />
+      </Button>
+    </div>
+  </div>
+));
+
 const EditApi = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -63,7 +94,7 @@ const EditApi = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const { getApiById, editApi, editSchema, user, showToast } = useGlobalContext();
   const { getToken } = useAuth();
 
@@ -74,30 +105,30 @@ const EditApi = () => {
         const token = await getToken();
         const response = await getApiById(id, token);
         const api = response.data;
-        
+
         // Set basic details
         setApiDetails({
           isPublic: api.isPublic,
           name: api.name,
           description: api.description,
           tags: api.tags || [],
-          category: api.category || 'other'
+          category: api.category || "other",
         });
-        
+
         // Set schema fields
         const initialFields = api.schema.map((field, index) => ({
           id: index + 1,
           fieldName: field.fieldName,
-          fieldType: field.fieldType.replace('faker.', '')
+          fieldType: field.fieldType.replace("faker.", ""),
         }));
         setFields(initialFields);
-        
+
         // Set entries
         setEntries(api.entries || 10);
         setErrorMessage("");
-
       } catch (err) {
-        const errorMsg = err?.response?.data?.message || "Failed to load API data";
+        const errorMsg =
+          err?.response?.data?.message || "Failed to load API data";
         setErrorMessage(errorMsg);
         showToast(errorMsg, "error");
       } finally {
@@ -140,49 +171,47 @@ const EditApi = () => {
         showToast("API name is required", "error");
         return;
       }
-  
+
       const token = await getToken();
-      
+
       // Update basic API info
       const apiData = {
         name: apiDetails.name,
         description: apiDetails.description,
         isPublic: apiDetails.isPublic,
-        category: apiDetails.category || 'other',
+        category: apiDetails.category || "other",
         tags: apiDetails.tags,
       };
-  
+
       await editApi(id, apiData, token);
-  
+
       // Update schema
       const schemaData = {
         entries,
         schema: fields.map(({ fieldName, fieldType }) => ({
           fieldName: fieldName || `field_${Date.now()}`,
-          fieldType: `faker.${fieldType}`
-        }))
+          fieldType: `faker.${fieldType}`,
+        })),
       };
-  
+
       await editSchema(id, schemaData, token);
       showToast("API updated successfully", "success");
       navigate(`/api-details/${id}`);
       setErrorMessage("");
-  
     } catch (err) {
-      const errorMsg = err?.response?.data?.message || err?.message || "Error updating API";
+      const errorMsg =
+        err?.response?.data?.message || err?.message || "Error updating API";
       setErrorMessage(errorMsg);
       showToast(errorMsg, "error");
     }
   };
-  
-  // Add debounced field update function
-  const debouncedFieldUpdate = debounce((index, value, field) => {
-    setFields(prevFields => {
-      const newFields = [...prevFields];
-      newFields[index][field] = value;
-      return newFields;
-    });
-  }, 100);
+
+  // Optimized field update handler
+  const handleFieldChange = useCallback((index, key, value) => {
+    setFields((prev) =>
+      prev.map((field, i) => (i === index ? { ...field, [key]: value } : field))
+    );
+  }, []);
 
   const handleAddTag = (newTag) => {
     if (apiDetails.tags.length >= 5) return;
@@ -191,6 +220,22 @@ const EditApi = () => {
       tags: [...new Set([...apiDetails.tags, newTag])],
     });
   };
+
+  // Memoize fields rendering
+  const renderedFields = useMemo(
+    () =>
+      fields.map((field, index) => (
+        <Field
+          key={field.id}
+          field={field}
+          index={index}
+          onFieldChange={handleFieldChange}
+          onRemove={removeField}
+          fakerTypes={fakerTypes}
+        />
+      )),
+    [fields, handleFieldChange, removeField]
+  );
 
   if (isLoading) {
     return (
@@ -362,62 +407,18 @@ const EditApi = () => {
               </div>
             </div>
 
-            {fields.map((field, index) => (
-              <div key={field.id} className="grid grid-cols-2 gap-2">
-                <Input
-                  placeholder="Field name"
-                  value={field.fieldName}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    // Immediate UI update
-                    const newFields = [...fields];
-                    newFields[index].fieldName = newValue;
-                    setFields(newFields);
-                    // Debounced state update
-                    debouncedFieldUpdate(index, newValue, 'fieldName');
-                  }}
-                />
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={field.fieldType}
-                    onValueChange={(value) => {
-                      // Immediate UI update
-                      const newFields = [...fields];
-                      newFields[index].fieldType = value;
-                      setFields(newFields);
-                      // Debounced state update
-                      debouncedFieldUpdate(index, value, 'fieldType');
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select data type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fakerTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeField(field.id)}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+            {/* Replace the fields mapping with the memoized version */}
+            {renderedFields}
 
             <div className="space-y-2">
               <Label>Number of Entries</Label>
               <Input
                 type="number"
                 value={entries}
-                onChange={(e) => setEntries(Math.min(1000, Math.max(1, e.target.value)))}
-                min="1"
+                onChange={(e) =>
+                  setEntries(Math.min(1000, Math.max(0, e.target.value)))
+                }
+                min="0"
                 max="1000"
                 className="w-full sm:w-32"
               />

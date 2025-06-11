@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,6 +50,7 @@ const API_CATEGORIES = [
   { value: "vehicle", label: "Vehicle" },
   { value: "other", label: "Other" },
 ];
+
 const CreateApi = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -84,6 +85,14 @@ const CreateApi = () => {
   const removeField = (id) => {
     setFields(fields.filter((field) => field.id !== id));
   };
+
+  const updateField = useCallback((index, key, value) => {
+    setFields((prevFields) =>
+      prevFields.map((field, i) =>
+        i === index ? { ...field, [key]: value } : field
+      )
+    );
+  }, []);
 
   const generateFakeData = () => {
     return fields.reduce(
@@ -161,7 +170,7 @@ const CreateApi = () => {
         tags: apiDetails.tags || [],
         category: apiDetails.category,
         schema: [],
-        starredBy: []
+        starredBy: [],
       };
       setApiData(data);
       setStep(2);
@@ -170,6 +179,42 @@ const CreateApi = () => {
       setErrorMessage(error?.message || "Error preparing API data");
     }
   };
+
+  const renderFields = useMemo(() => {
+    return fields.map((field, index) => (
+      <div key={field.id} className="grid grid-cols-2 gap-2">
+        <Input
+          placeholder="Field name"
+          value={field.fieldName}
+          onChange={(e) => updateField(index, "fieldName", e.target.value)}
+        />
+        <div className="flex items-center gap-2">
+          <Select
+            value={field.fieldType}
+            onValueChange={(value) => updateField(index, "fieldType", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select data type" />
+            </SelectTrigger>
+            <SelectContent>
+              {fakerTypes.map((type) => (
+                <SelectItem key={type} value={type} className="text-sm">
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => removeField(field.id)}
+          >
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      </div>
+    ));
+  }, [fields, updateField, removeField]);
 
   return (
     <div className="container max-w-4xl mx-auto py-6 px-4 sm:px-6 space-y-8">
@@ -354,53 +399,7 @@ const CreateApi = () => {
             </div>
 
             {/* Dynamic Fields */}
-            <div className="space-y-4">
-              {fields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-2 gap-2">
-                  <Input
-                    placeholder="Field name"
-                    value={field.fieldName}
-                    onChange={(e) => {
-                      const newFields = [...fields];
-                      newFields[index].fieldName = e.target.value;
-                      setFields(newFields);
-                    }}
-                  />
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={field.fieldType}
-                      onValueChange={(value) => {
-                        const newFields = [...fields];
-                        newFields[index].fieldType = value;
-                        setFields(newFields);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select data type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {fakerTypes.map((type) => (
-                          <SelectItem
-                            key={type}
-                            value={type}
-                            className="text-sm"
-                          >
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeField(field.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="space-y-4">{renderFields}</div>
 
             {/* Entries Input */}
             <div className="space-y-2">
@@ -410,10 +409,10 @@ const CreateApi = () => {
                 value={entries}
                 onChange={(e) =>
                   setEntries(
-                    Math.min(1000, Math.max(1, Number(e.target.value)))
+                    Math.min(1000, Math.max(0, Number(e.target.value)))
                   )
                 }
-                min="1"
+                min="0"
                 max="1000"
                 className="w-full sm:w-32"
               />
@@ -459,7 +458,9 @@ const CreateApi = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigator.clipboard.writeText(generatedEndpoint)}
+                onClick={() =>
+                  navigator.clipboard.writeText(generatedEndpoint)
+                }
                 title="Copy to clipboard"
               >
                 <Clipboard className="h-4 w-4" />

@@ -92,58 +92,6 @@ const Features = () => {
                 </div>
               </div>
               
-              <div className="mt-8 p-4 border rounded-md bg-muted">
-                <h4 className="font-medium mb-2">Advanced Features</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Code className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="ml-3">
-                      <h5 className="font-medium">Custom Schema</h5>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Define complex nested data structures
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Database className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="ml-3">
-                      <h5 className="font-medium">Custom Seed</h5>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Generate consistent data between requests
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Globe className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="ml-3">
-                      <h5 className="font-medium">Localization</h5>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Create region-specific mock data
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <HardDrive className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="ml-3">
-                      <h5 className="font-medium">Data Export</h5>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Download as JSON, CSV, or SQL
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </CardContent>
           </Card>
   )

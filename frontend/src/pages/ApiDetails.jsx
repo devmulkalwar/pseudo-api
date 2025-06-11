@@ -12,7 +12,8 @@ import {
   AlertCircle,
   Star,
   Edit,
-  Trash2
+  Trash2,
+  Check,
 } from "lucide-react";
 import {
   Card,
@@ -35,13 +36,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CodeBlock from "@/components/CodeBlock";
 import useGlobalContext from "@/hooks/useGlobalContext";
 import { faker } from "@faker-js/faker";
-import {
-  Alert,
-  AlertTitle,
-  AlertDescription,
-} from "@/components/ui/alert";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@clerk/clerk-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
 
 const generateFakeData = ({ schema, entries }) => {
   faker.seed(123);
@@ -69,7 +67,15 @@ const ApiDetails = () => {
   const { id } = useParams();
   const { getToken } = useAuth();
   const navigate = useNavigate();
-  const { getApiById, getUser, starApi, unstarApi, user, showToast, deleteApi } = useGlobalContext();
+  const {
+    getApiById,
+    getUser,
+    starApi,
+    unstarApi,
+    user,
+    showToast,
+    deleteApi,
+  } = useGlobalContext();
   const [apiDetails, setApiDetails] = useState(null);
   const [creator, setCreator] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -78,7 +84,7 @@ const ApiDetails = () => {
   const [relatedApis, setRelatedApis] = useState([]);
   const [isStarred, setIsStarred] = useState(false);
   const [starCount, setStarCount] = useState(0);
-
+  const [isCopied, setIsCopied] = useState(false);
   // Fetch API details and creator info
   useEffect(() => {
     const fetchData = async () => {
@@ -137,12 +143,12 @@ const ApiDetails = () => {
       if (isStarred) {
         await unstarApi(id, token);
         setIsStarred(false);
-        setStarCount(prev => prev - 1);
+        setStarCount((prev) => prev - 1);
         showToast("API removed from favorites", "info");
       } else {
         await starApi(id, token);
         setIsStarred(true);
-        setStarCount(prev => prev + 1);
+        setStarCount((prev) => prev + 1);
         showToast("API added to favorites", "success");
       }
     } catch (error) {
@@ -152,17 +158,23 @@ const ApiDetails = () => {
 
   const handleDelete = async () => {
     try {
-      if (!window.confirm('Are you sure you want to delete this API?')) {
+      if (!window.confirm("Are you sure you want to delete this API?")) {
         return;
       }
 
       const token = await getToken();
       await deleteApi(id, token);
       showToast("API deleted successfully", "success");
-      navigate('/explore');
+      navigate("/explore");
     } catch (error) {
       showToast("Failed to delete API", "error");
     }
+  };
+
+  const handleCopyEndpoint = () => {
+    navigator.clipboard.writeText(apiDetails.endpoint);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
   if (loading) {
@@ -217,7 +229,7 @@ const ApiDetails = () => {
             <Terminal className="h-6 w-6 text-primary" />
             {apiDetails.name}
           </h1>
-          
+
           {/* Owner Actions */}
           {user?._id === apiDetails.owner && (
             <div className="flex items-center gap-2">
@@ -262,8 +274,8 @@ const ApiDetails = () => {
           <Badge variant="outline" className="text-xs">
             {apiDetails.entries} entries
           </Badge>
-          <Badge 
-            variant={apiDetails.isPublic ? "secondary" : "outline"} 
+          <Badge
+            variant={apiDetails.isPublic ? "secondary" : "outline"}
             className="text-xs"
           >
             {apiDetails.isPublic ? "Public" : "Private"}
@@ -293,7 +305,9 @@ const ApiDetails = () => {
                 </Avatar>
                 <div>
                   <h3 className="font-medium text-sm">{creator.fullName}</h3>
-                  <p className="text-xs text-muted-foreground">@{creator.username}</p>
+                  <p className="text-xs text-muted-foreground">
+                    @{creator.username}
+                  </p>
                 </div>
               </div>
             )}
@@ -303,7 +317,7 @@ const ApiDetails = () => {
                 size="sm"
                 onClick={() => setIsFollowing(!isFollowing)}
                 className="text-xs flex-1"
-                disabled={!user|| loading || user?._id === apiDetails.owner}
+                disabled={!user || loading || user?._id === apiDetails.owner}
               >
                 {isFollowing ? "Following" : "Follow"}
               </Button>
@@ -328,19 +342,31 @@ const ApiDetails = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-2 bg-muted rounded-md gap-2">
-              <code className="font-mono text-xs break-all">
-                {apiDetails.endpoint}
-              </code>
-              <Button
-                onClick={copyEndpoint}
-                variant="ghost"
-                size="sm"
-                className="whitespace-nowrap h-8"
+            <div className="flex items-center justify-between space-x-2 rounded-md bg-muted p-2">
+              <code
+                className="font-mono text-xs truncate flex-1"
               >
-                <Copy className="h-4 w-4 mr-2" />
-                Copy
-              </Button>
+            {apiDetails.endpoint}
+              
+              </code>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 rounded-full flex-shrink-0"
+                      onClick={handleCopyEndpoint}
+                    >
+                      {isCopied ? (
+                        <Check className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </CardContent>
         </Card>
@@ -364,7 +390,9 @@ const ApiDetails = () => {
                   <Table className="w-full">
                     <TableHeader className="bg-muted">
                       <TableRow>
-                        <TableHead className="w-1/2 font-medium">Field Name</TableHead>
+                        <TableHead className="w-1/2 font-medium">
+                          Field Name
+                        </TableHead>
                         <TableHead className="font-medium">Type</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -375,7 +403,10 @@ const ApiDetails = () => {
                             {field.fieldName}
                           </TableCell>
                           <TableCell className="py-2">
-                            <Badge variant="secondary" className="font-mono text-xs">
+                            <Badge
+                              variant="secondary"
+                              className="font-mono text-xs"
+                            >
                               {field.fieldType}
                             </Badge>
                           </TableCell>
@@ -416,10 +447,16 @@ const ApiDetails = () => {
             <CardContent className="pt-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {relatedApis.map((api) => (
-                  <Card key={api.id} className="hover:bg-muted/50 transition-colors border-muted">
+                  <Card
+                    key={api.id}
+                    className="hover:bg-muted/50 transition-colors border-muted"
+                  >
                     <CardHeader className="p-3">
                       <CardTitle className="text-xs sm:text-sm">
-                        <Link to={`/apis/${api.id}`} className="hover:underline">
+                        <Link
+                          to={`/apis/${api.id}`}
+                          className="hover:underline"
+                        >
                           {api.name}
                         </Link>
                       </CardTitle>
@@ -430,7 +467,11 @@ const ApiDetails = () => {
                       </p>
                       <div className="flex flex-wrap gap-1">
                         {api.tags.map((tag) => (
-                          <Badge key={tag} variant="outline" className="text-xs px-1.5 py-0.5">
+                          <Badge
+                            key={tag}
+                            variant="outline"
+                            className="text-xs px-1.5 py-0.5"
+                          >
                             {tag}
                           </Badge>
                         ))}
@@ -484,8 +525,8 @@ const ApiDetails = () => {
               <CardContent className="pt-0">
                 <div className="flex flex-wrap gap-1">
                   {apiDetails.tags.map((tag) => (
-                    <Badge 
-                      key={tag} 
+                    <Badge
+                      key={tag}
                       variant="secondary"
                       className="text-xs px-1.5 py-0.5"
                     >

@@ -8,7 +8,14 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/clerk-react";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+  useAuth,
+} from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
 import Footer from "./components/Footer";
@@ -51,32 +58,44 @@ export default function App() {
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="flex flex-col w-full min-h-screen">
-          {/* Navbar */}
-          <header className="sticky top-0 z-50 flex h-16 items-center justify-between px-4 border-b mb-4 backdrop-blur-lg shadow-md">
+          {/* Navbar - Updated layout */}
+          <header className="sticky top-0 z-50 flex h-16 items-center justify-between px-2 sm:px-4 border-b mb-4 backdrop-blur-lg shadow-md">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="h-4" />
-              <h1 className="text-lg font-semibold">{activeRouteTitle}</h1>
+              <h1 className="hidden md:flex text-lg font-semibold">
+                {activeRouteTitle}
+              </h1>
             </div>
 
-            {/* Right section (Theme Toggle + Auth) */}
-            <div className="flex items-center gap-4">
+            {/* Right section - Updated for better mobile handling */}
+            <div className="flex items-center gap-2 sm:gap-4">
               <ModeToggle />
               <SignedOut>
-                <SignInButton mode="modal">
-                  <Button variant="secondary">Sign In</Button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <Button variant="secondary">Sign Up</Button>
-                </SignUpButton>
+                <div className="flex items-center gap-2">
+                  <SignInButton mode="modal">
+                    <Button variant="ghost" size="sm" className="px-2 sm:px-4">
+                      Sign In
+                    </Button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <Button variant="default" size="sm" className="px-2 sm:px-4">
+                      Sign Up
+                    </Button>
+                  </SignUpButton>
+                </div>
               </SignedOut>
               <SignedIn>
-                <UserButton appearance={{
-                  elements: {
-                    userButtonAvatarBox: "w-10 h-10 border-2 border-muted-foreground",
-                    userButtonPopoverCard: "bg-background border border-border shadow-lg",
-                  }
-                }} />
+                <UserButton
+                  appearance={{
+                    elements: {
+                      userButtonAvatarBox:
+                        "w-10 h-10 border-2 border-muted-foreground",
+                      userButtonPopoverCard:
+                        "bg-background border border-border shadow-lg",
+                    },
+                  }}
+                />
               </SignedIn>
             </div>
           </header>
@@ -86,7 +105,7 @@ export default function App() {
             <Outlet />
           </main>
 
-         <Footer/>
+          <Footer />
         </SidebarInset>
       </SidebarProvider>
       <Toaster />

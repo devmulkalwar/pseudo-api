@@ -32,6 +32,11 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const fakerCategories = {
   Person: {
@@ -409,20 +414,6 @@ const fakerCategories = {
   },
 };
 
-// Example values for popular faker types
-const exampleValues = {
-  "person.fullName": "Sarah Johnson",
-  "internet.email": "sarah.johnson@example.net",
-  "location.streetAddress": "4218 Maple Avenue",
-  "date.future": "2025-09-15T14:32:18.543Z",
-  "commerce.product": "Incredible Steel Computer",
-  "lorem.paragraph":
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
-  "finance.creditCardNumber": "4532 **** **** 8745",
-  "image.avatar":
-    "https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/1118.jpg",
-};
-
 const FakerjsTypes = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedCategory, setExpandedCategory] = useState(null);
@@ -443,96 +434,69 @@ const FakerjsTypes = () => {
     }
   );
   return (
-    <div id="faker-types" className="space-y-4 sm:space-y-6">
-      <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-xl sm:text-2xl flex items-center gap-2">
-            <Code className="h-5 w-5" />
-            Faker.js Types
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-6 space-y-6">
-          {/* Search - Full width on all screens */}
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search Faker.js types..."
-              className="pl-10 w-full rounded-md border border-input bg-background px-3 py-2"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+    <Card id="faker-types">
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="text-xl sm:text-2xl flex items-center gap-2">
+          <Code className="h-5 w-5" />
+          Faker.js Types
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 sm:p-6 space-y-4">
+        {/* Search - Full width on all screens */}
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search Faker.js types..."
+            className="pl-10 w-full rounded-md border border-input bg-background px-3 py-2"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
 
-          {/* Examples Grid - 1 column mobile, 2 columns tablet+ */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            {Object.entries(exampleValues).map(([type, value]) => (
-              <div key={type} className="border rounded-md p-3 bg-muted/30">
-                <div className="font-mono text-sm text-primary mb-1">
-                  {type}
-                </div>
-                <div className="text-sm truncate">{value}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Categories Grid - 1 column mobile, 2 columns tablet+ */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            {filteredCategories.map(([category, data]) => (
-              <Button
-                key={category}
-                id={`category-${category.toLowerCase()}`}
-                variant="outline"
-                className="h-auto py-3 px-4 justify-between"
-                onClick={() =>
-                  setExpandedCategory(
-                    expandedCategory === category ? null : category
-                  )
-                }
-              >
-                <div className="flex items-center">
-                  {data.icon}
-                  <div className="ml-3 text-left">
-                    <div className="font-medium">{category}</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {data.types.length} types
+        {/* Categories Grid with Collapsible */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          {filteredCategories.map(([category, data]) => (
+            <Collapsible key={category}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full h-auto py-3 px-4 justify-between"
+                >
+                  <div className="flex items-center">
+                    {data.icon}
+                    <div className="ml-3 text-left">
+                      <div className="font-medium">{category}</div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {data.types.length} types
+                      </div>
                     </div>
                   </div>
+                  <ChevronRight className="h-5 w-5 transition-transform duration-200 data-[state=open]:rotate-90" />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2">
+                <div className="border rounded-md p-4 bg-muted/30 space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    {data.description}
+                  </p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {data.types.map((type) => (
+                      <code
+                        key={type}
+                        className="text-xs bg-background px-2 py-1 rounded border"
+                      >
+                        {type}
+                      </code>
+                    ))}
+                  </div>
                 </div>
-                <ChevronRight
-                  className={`h-5 w-5 transition-transform duration-200 ${
-                    expandedCategory === category ? "rotate-90" : ""
-                  }`}
-                />
-              </Button>
-            ))}
-          </div>
-
-          {/* Expanded Category */}
-          {expandedCategory && (
-            <div className="border rounded-md p-4 mt-4 bg-muted/30">
-              <h3 className="font-medium text-lg mb-2 flex items-center">
-                {fakerCategories[expandedCategory].icon}
-                <span className="ml-2">{expandedCategory}</span>
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                {fakerCategories[expandedCategory].description}
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {fakerCategories[expandedCategory].types.map((type) => (
-                  <code
-                    key={type}
-                    className="text-xs bg-background px-2 py-1 rounded border"
-                  >
-                    {type}
-                  </code>
-                ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+              </CollapsibleContent>
+            </Collapsible>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

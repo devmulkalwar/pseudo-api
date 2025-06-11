@@ -4,7 +4,7 @@ import { ChevronRight, Code, Database, Globe, HardDrive, Plus, Search, Share2, S
 
 const Features = () => {
   return (
-    <Card id="features">
+    <Card id="features" className="transition-shadow duration-200 hover:shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Star className="h-5 w-5" />

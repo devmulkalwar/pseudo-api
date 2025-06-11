@@ -10,7 +10,9 @@ import {
   Linkedin,
   Building,
   LifeBuoy,
-  Terminal
+  Terminal,
+  Building2,
+  Instagram
 } from 'lucide-react';
 import {
   Card,
@@ -47,6 +49,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Separator } from '@/components/ui/separator';
+import { Link } from 'react-router-dom';
 
 export default function Contact() {
   const form = useRef();
@@ -85,6 +88,24 @@ export default function Contact() {
     }
   };
 
+  const socialLinks = [
+    {
+      icon: <Github className="h-4 w-4" />,
+      href: "https://github.com/devmulkalwar",
+      label: "GitHub"
+    },
+    {
+      icon: <Linkedin className="h-4 w-4" />,
+      href: "https://www.linkedin.com/in/dev-mulkalwar-b2745a258/",
+      label: "LinkedIn"
+    },
+    {
+      icon: <Instagram className="h-4 w-4" />,
+      href: "https://www.instagram.com/dev_mulkalwar/",
+      label: "Instagram"
+    }
+  ];
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -104,94 +125,7 @@ export default function Contact() {
       {/* Main Content */}
       <section className="flex-grow py-12 px-4">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Contact Info */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building className="h-5 w-5 text-primary" />
-                  Contact Options
-                </CardTitle>
-                <CardDescription>Choose your preferred method</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-primary" />
-                    <div>
-                      <h3 className="font-medium">Email Support</h3>
-                      <p className="text-sm text-muted-foreground">support@pseudoapi.com</p>
-                    </div>
-                  </div>
-                  <Separator />
-                  <div className="flex items-center gap-3">
-                    <LifeBuoy className="h-5 w-5 text-primary" />
-                    <div>
-                      <h3 className="font-medium">Documentation</h3>
-                      <Button variant="link" size="sm" className="h-auto p-0">
-                        Visit Help Center
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3">
-                  <h3 className="font-medium text-sm">Follow Us</h3>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="icon" className="rounded-full">
-                      <Twitter className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" className="rounded-full">
-                      <Linkedin className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" className="rounded-full">
-                      <Github className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* FAQ Section */}
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <LifeBuoy className="h-5 w-5 text-primary" />
-                  Common Questions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Accordion type="single" collapsible className="w-full">
-                  {[
-                    { 
-                      question: "How do I get an API key?",
-                      answer: "Generate keys in your dashboard under 'API Keys' section"
-                    },
-                    {
-                      question: "What are the rate limits?",
-                      answer: "Free tier: 100/day, Premium: 10,000/day"
-                    },
-                    {
-                      question: "How to upgrade plans?",
-                      answer: "Navigate to Billing in your dashboard"
-                    }
-                  ].map((item, index) => (
-                    <AccordionItem key={index} value={`item-${index}`}>
-                      <AccordionTrigger className="text-sm">
-                        {item.question}
-                      </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground">
-                        {item.answer}
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </CardContent>
-            </Card>
-          </div>
-
+         
           {/* Contact Form */}
           <div className="lg:col-span-2">
             <Card className="hover:shadow-md transition-shadow">
@@ -205,11 +139,12 @@ export default function Contact() {
                 <form ref={form} onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Name</Label>
+                      <Label>Name <span className="text-primary">*</span></Label>
                       <Input 
                         name="user_name"
                         placeholder="Your name" 
                         value={name}
+                         required
                         onChange={(e) => setName(e.target.value)}
                       />
                     </div>
@@ -272,6 +207,69 @@ export default function Contact() {
               </CardContent>
             </Card>
           </div>
+
+           {/* Contact Info */}
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building className="h-5 w-5 text-primary" />
+                  Contact Options
+                </CardTitle>
+                <CardDescription>Choose your preferred method</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-primary" />
+                    <div>
+                      <h3 className="font-medium">Email Support</h3>
+                      <p className="text-sm text-muted-foreground">devmulkalwar95@gmail.com</p>
+                    </div>
+                  </div>
+                  <Separator />
+                  <div className="flex items-center gap-3">
+                    <Building2 className="h-5 w-5 text-primary" />
+                    <div>
+                      <h3 className="font-medium">Office</h3>
+                      <a href='https://maps.app.goo.gl/u5uE7vArFP3va3S5A' target="_blank"
+                          rel="noopener noreferrer"
+                         className="h-auto p-0">
+                        Visit Help Center
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                  <h3 className="font-medium text-sm">Follow Us</h3>
+                  <div className="flex gap-2">
+                    {socialLinks.map(({ icon, href, label }) => (
+                      <Button
+                        key={label}
+                        variant="outline"
+                        size="icon"
+                        className="rounded-full hover:text-primary hover:border-primary transition-colors"
+                        asChild
+                      >
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={label}
+                        >
+                          {icon}
+                        </a>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
         </div>
       </section>
 

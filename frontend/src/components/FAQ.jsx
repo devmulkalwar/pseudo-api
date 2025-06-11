@@ -41,46 +41,47 @@ const FAQ = () => {
 
 const faqItems = [
   {
-    value: "rate-limits",
-    question: "What are the rate limits?",
-    answer: (
-      <>
-        <p>Free tier: 100 requests/day</p>
-        <p>Pro tier: 5,000 requests/day</p>
-        <p>Enterprise tier: Custom limits available</p>
-      </>
-    )
-  },
-  {
-    value: "data-refresh",
-    question: "How often does data refresh?",
+    value: "is-free",
+    question: "Is PseudoAPI really free?",
     answer: (
       <p>
-        By default, data regenerates on every API call. If you need
-        consistent data between calls, use the <code className="bg-muted px-1 py-0.5 rounded text-sm">seed</code>{" "}
-        parameter with a consistent value.
+        Yes, PseudoAPI is completely free to use. You can create and use mock APIs without any subscription or payment.
       </p>
     )
   },
   {
-    value: "custom-types",
-    question: "Can I create custom data types?",
+    value: "signup-required",
+    question: "Do I need to sign up to use it?",
     answer: (
       <p>
-        Yes, Pro and Enterprise users can create custom data types with
-        JavaScript functions. These can be saved to your account and
-        reused across multiple APIs.
+        While you can explore the platform without signing up, creating and saving APIs requires a free account for managing and accessing your endpoints.
       </p>
     )
   },
   {
-    value: "data-relationships",
-    question: "Can I create relationships between data?",
+    value: "public-private",
+    question: "Can I make my APIs public or private?",
     answer: (
       <p>
-        Yes, you can create parent-child relationships between data
-        models using references. This allows for complex data structures
-        like users with orders or products with categories.
+        Absolutely. You can choose whether your APIs are visible only to you or can be shared publicly with others.
+      </p>
+    )
+  },
+  {
+    value: "data-types",
+    question: "What types of data can I generate?",
+    answer: (
+      <p>
+        PseudoAPI supports over 300+ faker types like names, emails, phone numbers, products, companies, and more. It's great for testing and prototyping.
+      </p>
+    )
+  },
+  {
+    value: "integration",
+    question: "How do I integrate it into my app?",
+    answer: (
+      <p>
+        Simply copy the API URL and use it with <code className="bg-muted px-1 py-0.5 rounded text-sm">fetch</code>, <code className="bg-muted px-1 py-0.5 rounded text-sm">axios</code>, or any HTTP client of your choice. No authentication needed.
       </p>
     )
   }

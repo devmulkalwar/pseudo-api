@@ -15,12 +15,23 @@ const ApiIntegration = () => {
       </CardHeader>
       <CardContent className="space-y-6 px-2 sm:px-6">
         <Tabs defaultValue="axios" className="w-full">
-          <TabsList className="w-full grid grid-cols-2 lg:grid-cols-4 gap-2">
-            <TabsTrigger value="axios" className="text-sm">Axios</TabsTrigger>
-            <TabsTrigger value="fetch" className="text-sm">Fetch</TabsTrigger>
-            <TabsTrigger value="python" className="text-sm">Python</TabsTrigger>
-            <TabsTrigger value="curl" className="text-sm">cURL</TabsTrigger>
-          </TabsList>
+          {/* Updated TabsList for better responsiveness */}
+          <div className="mb-4 overflow-x-auto pb-2">
+            <TabsList className="w-full min-w-fit inline-flex h-9 items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground">
+              <TabsTrigger value="axios" className="min-w-[100px] px-3">
+                Axios
+              </TabsTrigger>
+              <TabsTrigger value="fetch" className="min-w-[100px] px-3">
+                Fetch
+              </TabsTrigger>
+              <TabsTrigger value="python" className="min-w-[100px] px-3">
+                Python
+              </TabsTrigger>
+              <TabsTrigger value="curl" className="min-w-[100px] px-3">
+                cURL
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="axios" className="mt-4">
             <CodeBlock

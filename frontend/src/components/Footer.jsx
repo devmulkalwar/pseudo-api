@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
-import { Github, Twitter, Mail } from "lucide-react";
+import { Github, Twitter, Mail, Instagram, X, Linkedin } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -93,7 +93,7 @@ export default function Footer() {
           {/* Social Media Links */}
           <div className="flex items-center gap-4 mb-4 sm:mb-0">
             <Link
-              to="https://github.com"
+              to="https://github.com/devmulkalwar"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub"
@@ -102,16 +102,25 @@ export default function Footer() {
               <Github size={20} />
             </Link>
             <Link
-              to="https://twitter.com"
+              to="https://www.linkedin.com/in/dev-mulkalwar-b2745a258/"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Twitter"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Twitter size={20} />
+              <Linkedin size={20} />
             </Link>
             <Link
-              to="mailto:contact@pseudoapi.com"
+              to="https://www.instagram.com/dev_mulkalwar/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Twitter"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Instagram size={20} />
+            </Link>
+            <Link
+              to="mailto:devmulkalwar95@gmail.com"
               aria-label="Email"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >

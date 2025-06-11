@@ -11,126 +11,81 @@ import FakerjsTypes from "@/components/FakerjsTypes";
 import ApiIntegration from "@/components/ApiIntegration";
 import Features from "@/components/Features";
 import FAQ from "@/components/FAQ";
+import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 const Documentation = () => {
+  // Add active section state
+  const [activeSection, setActiveSection] = useState('getting-started');
+
   // Function to handle smooth scrolling
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+      setActiveSection(id);
     }
   };
 
+  // Monitor scroll position to update active section
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    const sections = document.querySelectorAll('[id]');
+    sections.forEach(section => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
+
+  const NavButton = ({ id, children }) => (
+    <Button 
+      variant="ghost" 
+      className={cn(
+        "w-full justify-start text-left px-4 font-medium transition-colors",
+        activeSection === id ? "bg-muted text-primary" : "hover:bg-muted/60"
+      )}
+      onClick={() => scrollToSection(id)}
+    >
+      {children}
+    </Button>
+  );
+
   return (
-    <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-6 max-w-full sm:max-w-6xl overflow-hidden">
-      {/* Header */}
-      <div className="mb-4 sm:mb-6 md:mb-8 text-center">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3">
-          PseudoAPI Documentation
+    <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-6 max-w-full sm:max-w-7xl">
+      {/* Header with gradient */}
+      <div className="mb-8 sm:mb-12 text-center space-y-3">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent">
+          Documentation
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
           Generate realistic mock data with Faker.js types
         </p>
       </div>
       
-      {/* Main Content Grid */}
-      <div className="grid lg:grid-cols-[240px_1fr] gap-4 sm:gap-6 lg:gap-8">
-        {/* Sidebar Navigation - Desktop */}
+      <div className="grid lg:grid-cols-[240px_1fr] gap-6 lg:gap-10">
+        {/* Desktop Sidebar - Fixed position */}
         <aside className="hidden lg:block">
-          <ScrollArea className="h-[calc(100vh-8rem)] sticky top-20 pr-4">
-            <div className="space-y-2 py-2">
-              <h2 className="text-lg font-semibold mb-3">Quick Navigation</h2>
-              <div className="space-y-1">
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start text-left pl-3"
-                  onClick={() => scrollToSection('getting-started')}
-                >
-                  Getting Started
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start text-left pl-3"
-                  onClick={() => scrollToSection('faker-types')}
-                >
-                  Faker.js Types
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start text-left pl-3"
-                  onClick={() => scrollToSection('integration')}
-                >
-                  API Integration
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start text-left pl-3"
-                  onClick={() => scrollToSection('features')}
-                >
-                  Core Features
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start text-left pl-3"
-                  onClick={() => scrollToSection('faq')}
-                >
-                  FAQ
-                </Button>
-              </div>
-            </div>
-          </ScrollArea>
+          <div className="fixed w-[240px] overflow-hidden">
+            <ScrollArea className="pb-10">
+              <nav className="space-y-1 pr-4">
+                <NavButton id="getting-started">Getting Started</NavButton>
+                <NavButton id="faker-types">Faker.js Types</NavButton>
+                <NavButton id="integration">API Integration</NavButton>
+                <NavButton id="features">Core Features</NavButton>
+                <NavButton id="faq">FAQ</NavButton>
+              </nav>
+            </ScrollArea>
+          </div>
         </aside>
-        
-        {/* Mobile Navigation - Updated for better scrolling */}
-        <div className="lg:hidden -mx-2 mb-4">
-          <ScrollArea className="w-screen">
-            <div className="flex space-x-2 py-1 px-2 min-w-max">
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="whitespace-nowrap"
-                onClick={() => scrollToSection('getting-started')}
-              >
-                Get Started
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="whitespace-nowrap"
-                onClick={() => scrollToSection('faker-types')}
-              >
-                Faker Types
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="whitespace-nowrap"
-                onClick={() => scrollToSection('integration')}
-              >
-                Integration
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="whitespace-nowrap"
-                onClick={() => scrollToSection('features')}
-              >
-                Features
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="whitespace-nowrap"
-                onClick={() => scrollToSection('faq')}
-              >
-                FAQ
-              </Button>
-            </div>
-          </ScrollArea>
-        </div>
-        
-        {/* Main Content Area - Improved mobile layout */}
-        <main className="space-y-4 sm:space-y-6 md:space-y-8 w-full overflow-x-hidden">
+
+        {/* Main Content */}
+        <main className="w-full overflow-hidden space-y-6 sm:space-y-8 lg:space-y-10 pb-20">
           {/* Getting Started */}
           <Card id="getting-started" className="w-full">
             <CardHeader>

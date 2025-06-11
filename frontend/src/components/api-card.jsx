@@ -85,60 +85,20 @@ export function ApiCard({
   };
 
   const onDelete = async () => {
-    try {
-      if (!window.confirm('Are you sure you want to delete this API?')) {
-        return;
-      }
-      const token = await getToken();
-      await deleteApi(_id, token);
-      showToast("API deleted successfully", "success");
-    } catch (error) {
-      console.log(error);
-      showToast("Failed to delete API", "error");
-    }
+    await deleteApi(_id);
   }
 
   const formatDate = (dateString) => {
     try {
-      if (!dateString) return "Just now";
-      
+      if (!dateString) return "No date";
       const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        console.error("Invalid date:", dateString);
-        return "Just now";
-      }
+      if (isNaN(date.getTime())) return "Invalid date";
       
-      const now = new Date();
-      const diff = now.getTime() - date.getTime();
-      
-      // Less than a minute
-      if (diff < 60000) return "Just now";
-      
-      // Less than an hour
-      if (diff < 3600000) {
-        const minutes = Math.floor(diff / 60000);
-        return `${minutes}m ago`;
-      }
-      
-      // Less than a day
-      if (diff < 86400000) {
-        const hours = Math.floor(diff / 3600000);
-        return `${hours}h ago`;
-      }
-      
-      // Less than a week
-      if (diff < 604800000) {
-        const days = Math.floor(diff / 86400000);
-        return `${days}d ago`;
-      }
-      
-      // Format as date
       const options = { year: 'numeric', month: 'short', day: 'numeric' };
       return date.toLocaleDateString(undefined, options);
-      
     } catch (error) {
       console.error("Date formatting error:", error);
-      return "Just now";
+      return "Invalid date";
     }
   };
 
@@ -168,7 +128,6 @@ export function ApiCard({
                     size="icon"
                     className="h-8 w-8 rounded-full"
                     onClick={toggleStar}
-                    disabled={!user}
                   >
                     <Star
                       className={`h-4 w-4 ${

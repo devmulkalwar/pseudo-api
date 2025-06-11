@@ -40,6 +40,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@clerk/clerk-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
+import { ApiCard } from "@/components/api-card";
 
 const generateFakeData = ({ schema, entries }) => {
   faker.seed(123);
@@ -75,6 +76,7 @@ const ApiDetails = () => {
     user,
     showToast,
     deleteApi,
+    apis, 
   } = useGlobalContext();
   const [apiDetails, setApiDetails] = useState(null);
   const [creator, setCreator] = useState(null);
@@ -102,26 +104,18 @@ const ApiDetails = () => {
     if (id) fetchData();
   }, [id]);
 
-  // Set related APIs (mock data; replace with actual API call)
+  // Update related APIs logic with strict filtering
   useEffect(() => {
-    const mockRelatedApis = [
-      {
-        id: 1,
-        name: "E-commerce Products API",
-        description: "Fake product data for e-commerce applications",
-        tags: ["commerce", "products", "fake-data"],
-        endpoint: "/api/v1/ecommerce-products",
-      },
-      {
-        id: 2,
-        name: "User Profiles API",
-        description: "Mock user profiles with social media data",
-        tags: ["users", "social", "profiles"],
-        endpoint: "/api/v1/user-profiles",
-      },
-    ];
-    setRelatedApis(mockRelatedApis);
-  }, [id]);
+    if (apiDetails && apis && apis.length > 0) {
+      const related = apis.filter(api => 
+        api.category === apiDetails.category && // Same category
+        api._id !== id && // Not the current API using URL param
+        api.isPublic === true // Only public APIs
+      ).slice(0, 3); // Limit to 3 related APIs
+
+      setRelatedApis(related);
+    }
+  }, [apiDetails, apis, id]); // Added id to dependencies
 
   // Check star status
   useEffect(() => {
@@ -436,53 +430,31 @@ const ApiDetails = () => {
             </CardContent>
           </Card>
 
-          {/* Related APIs - Grid for better mobile layout */}
+          {/* Related APIs Card - Updated with more details */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                 <Code className="h-4 w-4 text-primary" />
                 Related APIs
               </CardTitle>
+              <CardDescription>
+                Other APIs in the {apiDetails.category} category
+              </CardDescription>
             </CardHeader>
-            <CardContent className="pt-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {relatedApis.map((api) => (
-                  <Card
-                    key={api.id}
-                    className="hover:bg-muted/50 transition-colors border-muted"
-                  >
-                    <CardHeader className="p-3">
-                      <CardTitle className="text-xs sm:text-sm">
-                        <Link
-                          to={`/apis/${api.id}`}
-                          className="hover:underline"
-                        >
-                          {api.name}
-                        </Link>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 p-3 pt-0">
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {api.description}
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        {api.tags.map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant="outline"
-                            className="text-xs px-1.5 py-0.5"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                      <code className="text-xs font-mono text-primary block truncate">
-                        {api.endpoint}
-                      </code>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {relatedApis.length > 0 ? (
+                relatedApis.map((api) => (
+                  <ApiCard 
+                    key={api._id} 
+                    {...api} 
+                  />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8 text-muted-foreground">
+                  <Code className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>No related APIs found in this category.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

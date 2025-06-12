@@ -14,6 +14,16 @@ import useGlobalContext from "@/hooks/useGlobalContext";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function ApiCard({
   _id,
@@ -34,6 +44,7 @@ export function ApiCard({
   const [ownerData, setOwnerData] = useState({});
   const [isCopied, setIsCopied] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     const result = users.find((u) => u._id === owner);
@@ -84,12 +95,8 @@ export function ApiCard({
     }
   };
 
-  const onDelete = async () => {
+  const handleDelete = async () => {
     try {
-      if (!window.confirm("Are you sure you want to delete this API?")) {
-        return;
-      }
-
       const token = await getToken();
       if (!token) {
         showToast("Authentication required", "error");
@@ -98,14 +105,12 @@ export function ApiCard({
 
       await deleteApi(_id, token);
       showToast("API deleted successfully", "success");
+      setShowDeleteDialog(false);
     } catch (error) {
       console.error("Delete API Error:", error);
-      showToast(
-        error.response?.data?.message || "Failed to delete API",
-        "error"
-      );
+      showToast(error.response?.data?.message || "Failed to delete API", "error");
     }
-  }
+  };
 
   const formatDate = (dateString) => {
     try {
@@ -295,7 +300,7 @@ export function ApiCard({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 rounded-full text-red-500 hover:text-red-600 hover:bg-red-50"
-                      onClick={onDelete}
+                      onClick={() => setShowDeleteDialog(true)}
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
@@ -317,6 +322,26 @@ export function ApiCard({
           </Button>
         </Link>
       </CardFooter>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete API</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this API? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

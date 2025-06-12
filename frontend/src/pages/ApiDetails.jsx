@@ -42,6 +42,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@clerk/clerk-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
 import { ApiCard } from "@/components/api-card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const generateFakeData = ({ schema, entries }) => {
   faker.seed(123);
@@ -91,6 +101,7 @@ const ApiDetails = () => {
   const [isStarred, setIsStarred] = useState(false);
   const [starCount, setStarCount] = useState(0);
   const [isCopied, setIsCopied] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   // Add loading state for follow button
   const [followLoading, setFollowLoading] = useState(false);
   // Fetch API details and creator info
@@ -158,10 +169,6 @@ const ApiDetails = () => {
 
   const handleDelete = async () => {
     try {
-      if (!window.confirm("Are you sure you want to delete this API?")) {
-        return;
-      }
-
       const token = await getToken();
       await deleteApi(id, token);
       showToast("API deleted successfully", "success");
@@ -273,7 +280,7 @@ const ApiDetails = () => {
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={handleDelete}
+                onClick={() => setShowDeleteDialog(true)}
                 className="flex items-center gap-2"
               >
                 <Trash2 className="h-4 w-4" />
@@ -550,6 +557,27 @@ const ApiDetails = () => {
           )}
         </div>
       </div>
+
+      {/* Add Alert Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your API and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

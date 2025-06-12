@@ -38,6 +38,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import CodeBlock from "@/components/CodeBlock";
 import useGlobalContext from "@/hooks/useGlobalContext";
 import { useAuth } from "@clerk/clerk-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const API_CATEGORIES = [
   { value: "commerce", label: "Commerce" },
@@ -189,21 +201,42 @@ const CreateApi = () => {
           onChange={(e) => updateField(index, "fieldName", e.target.value)}
         />
         <div className="flex items-center gap-2">
-          <Select
-            value={field.fieldType}
-            onValueChange={(value) => updateField(index, "fieldType", value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select data type" />
-            </SelectTrigger>
-            <SelectContent>
-              {fakerTypes.map((type) => (
-                <SelectItem key={type} value={type} className="text-sm">
-                  {type}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                className="w-full justify-between"
+              >
+                {field.fieldType}
+                <ChevronRight className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[300px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search faker type..." />
+                <CommandEmpty>No faker type found.</CommandEmpty>
+                <CommandGroup>
+                  <ScrollArea className="h-[200px]">
+                    {fakerTypes.map((type) => (
+                      <CommandItem
+                        key={type}
+                        onSelect={() => {
+                          updateField(index, "fieldType", type);
+                        }}
+                        className="cursor-pointer"
+                      >
+                        {type}
+                        {field.fieldType === type && (
+                          <Check className="ml-auto h-4 w-4" />
+                        )}
+                      </CommandItem>
+                    ))}
+                  </ScrollArea>
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
           <Button
             variant="ghost"
             size="icon"

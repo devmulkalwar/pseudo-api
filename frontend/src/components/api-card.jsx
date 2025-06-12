@@ -85,7 +85,26 @@ export function ApiCard({
   };
 
   const onDelete = async () => {
-    await deleteApi(_id);
+    try {
+      if (!window.confirm("Are you sure you want to delete this API?")) {
+        return;
+      }
+
+      const token = await getToken();
+      if (!token) {
+        showToast("Authentication required", "error");
+        return;
+      }
+
+      await deleteApi(_id, token);
+      showToast("API deleted successfully", "success");
+    } catch (error) {
+      console.error("Delete API Error:", error);
+      showToast(
+        error.response?.data?.message || "Failed to delete API",
+        "error"
+      );
+    }
   }
 
   const formatDate = (dateString) => {

@@ -89,8 +89,8 @@ const Profile = () => {
     }
   }, [profileUser, users, user]);
 
-  // Add follow/unfollow handler
-  const handleFollowToggle = async (targetUser = profileUser) => {
+  // Update the follow/unfollow handler to match UserCard implementation
+  const handleFollowToggle = async () => {
     if (!user) {
       showToast("Please login to follow users", "error");
       return;
@@ -100,37 +100,15 @@ const Profile = () => {
       setLoading(true);
       const token = await getToken();
       
-      if (user.following?.includes(targetUser.clerkUserId)) {
-        await unfollowUser(targetUser.clerkUserId, token);
+      if (isFollowing) {
+        await unfollowUser(profileUser.clerkUserId, token);
       } else {
-        await followUser(targetUser.clerkUserId, token);
+        await followUser(profileUser.clerkUserId, token);
       }
       
-      // Refresh users list and update lists
+      // Refresh users list
       await getUsers();
-      
-      // Update followers and following lists
-      const updatedUsers = users.map(u => ({
-        ...u,
-        isFollowing: user.following?.includes(u.clerkUserId)
-      }));
-      
-      const updatedFollowers = updatedUsers.filter(u => 
-        profileUser.followers?.includes(u.clerkUserId)
-      );
-      
-      const updatedFollowing = updatedUsers.filter(u => 
-        profileUser.following?.includes(u.clerkUserId)
-      );
-      
-      setFollowersList(updatedFollowers);
-      setFollowingList(updatedFollowing);
-      
-      // Update main following status if the target was the profile user
-      if (targetUser.clerkUserId === profileUser.clerkUserId) {
-        setIsFollowing(!isFollowing);
-      }
-      
+      setIsFollowing(!isFollowing);
     } catch (error) {
       console.error("Follow toggle error:", error);
       showToast("Failed to update follow status", "error");
@@ -139,18 +117,18 @@ const Profile = () => {
     }
   };
 
-  // Update the follow button JSX
+  // Update the FollowButton component
   const FollowButton = () => (
     <Button
       variant={isFollowing ? "default" : "outline"}
-      className={`flex items-center gap-1 sm:gap-2 px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm ${loading ? 'opacity-50' : ''}`}
+      className="flex items-center gap-2"
       onClick={handleFollowToggle}
-      disabled={!user || loading}
+      disabled={!user || loading || user?._id === profileUser._id}
     >
       {loading ? (
-        <div className="h-3 w-3 sm:h-4 sm:w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
       ) : (
-        <UserPlus className="h-3 w-3 sm:h-4 sm:w-4" />
+        <UserPlus className="h-4 w-4" />
       )}
       {isFollowing ? "Following" : "Follow"}
     </Button>

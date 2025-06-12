@@ -14,6 +14,7 @@ import {
   Edit,
   Trash2,
   Check,
+  UserPlus
 } from "lucide-react";
 import {
   Card,
@@ -77,6 +78,9 @@ const ApiDetails = () => {
     showToast,
     deleteApi,
     apis, 
+    followUser,
+    unfollowUser,
+    getUsers,
   } = useGlobalContext();
   const [apiDetails, setApiDetails] = useState(null);
   const [creator, setCreator] = useState(null);
@@ -87,6 +91,8 @@ const ApiDetails = () => {
   const [isStarred, setIsStarred] = useState(false);
   const [starCount, setStarCount] = useState(0);
   const [isCopied, setIsCopied] = useState(false);
+  // Add loading state for follow button
+  const [followLoading, setFollowLoading] = useState(false);
   // Fetch API details and creator info
   useEffect(() => {
     const fetchData = async () => {
@@ -169,6 +175,34 @@ const ApiDetails = () => {
     navigator.clipboard.writeText(apiDetails.endpoint);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  // Update the follow/unfollow handler
+  const handleFollowToggle = async () => {
+    if (!user) {
+      showToast("Please login to follow users", "error");
+      return;
+    }
+
+    try {
+      setFollowLoading(true);
+      const token = await getToken();
+      
+      if (isFollowing) {
+        await unfollowUser(creator.clerkUserId, token);
+      } else {
+        await followUser(creator.clerkUserId, token);
+      }
+      
+      // Refresh users list
+      await getUsers();
+      setIsFollowing(!isFollowing);
+    } catch (error) {
+      console.error("Follow toggle error:", error);
+      showToast("Failed to update follow status", "error");
+    } finally {
+      setFollowLoading(false);
+    }
   };
 
   if (loading) {
@@ -309,10 +343,15 @@ const ApiDetails = () => {
               <Button
                 variant={isFollowing ? "default" : "outline"}
                 size="sm"
-                onClick={() => setIsFollowing(!isFollowing)}
+                onClick={handleFollowToggle}
                 className="text-xs flex-1"
-                disabled={!user || loading || user?._id === apiDetails.owner}
+                disabled={!user || followLoading || user?._id === creator?._id}
               >
+                {followLoading ? (
+                  <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                ) : (
+                  <UserPlus className="h-4 w-4 mr-2" />
+                )}
                 {isFollowing ? "Following" : "Follow"}
               </Button>
               <Button

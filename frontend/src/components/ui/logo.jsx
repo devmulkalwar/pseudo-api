@@ -11,16 +11,17 @@ export const LogoIcon = () => {
         cx="100" 
         cy="100" 
         r="95" 
-        className="fill-background stroke-foreground" 
+        className="fill-primary/10 stroke-primary" 
         strokeWidth="2"
       />
       <text 
         x="100" 
         y="125" 
-        className="font-bold text-foreground" 
+        className="fill-primary"
         fontSize="80"
         textAnchor="middle"
         fontFamily="Arial, sans-serif"
+        fontWeight="bold"
       >
         PA
       </text>

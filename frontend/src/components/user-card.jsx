@@ -16,11 +16,11 @@ import { useState, useEffect } from "react";
 import useGlobalContext from "@/hooks/useGlobalContext";
 
 export function UserCard({ user: profileUser }) {
-  const { user, followUser, unfollowUser, showToast, getUsers } = useGlobalContext();
+  const { user, followUser, unfollowUser, showToast, getUsers, apis } = useGlobalContext();
   const { getToken } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [createdApis, setCreatedApis] = useState([]);
   // Add dependency on users list to update following status
   useEffect(() => {
     if (user?.following && profileUser?.clerkUserId) {
@@ -58,6 +58,15 @@ export function UserCard({ user: profileUser }) {
     }
   };
 
+  // Add getTotalStars function
+  const getTotalStars = () => {
+    if (!apis) return 0;
+    const userApis = apis.filter(api => api.owner === profileUser._id);
+    return userApis.reduce((total, api) => 
+      total + (Array.isArray(api.starredBy) ? api.starredBy.length : 0), 0
+    );
+  };
+
   return (
     <Card className="w-full max-w-sm transition-all duration-200 hover:shadow-md">
       <CardHeader className="pt-6 pb-4 text-center space-y-4">
@@ -82,7 +91,7 @@ export function UserCard({ user: profileUser }) {
       <CardContent className="px-6 py-4 border-y">
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="space-y-1 p-2">
-            <p className="text-xl font-bold">{profileUser.starredApis.length}</p>
+            <p className="text-xl font-bold">{getTotalStars()}</p>
             <p className="text-xs text-muted-foreground font-medium">Stars</p>
           </div>
           <div className="space-y-1 p-2 border-x">

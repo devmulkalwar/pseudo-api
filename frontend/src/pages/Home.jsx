@@ -118,7 +118,7 @@ const Home = () => {
             <Button asChild variant="outline" className="w-full">
               <Link to="/create-api">
                 <BookOpen className="h-4 w-4" />
-                View Docs
+                Create Api
               </Link>
             </Button>
           </CardFooter>

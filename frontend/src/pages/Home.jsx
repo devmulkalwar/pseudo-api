@@ -16,6 +16,7 @@ import {
   StarIcon,
   ClipboardIcon,
   CheckIcon,
+  CirclePlus,
   BookOpen,
 } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -117,7 +118,7 @@ const Home = () => {
           <CardFooter>
             <Button asChild variant="outline" className="w-full">
               <Link to="/create-api">
-                <BookOpen className="h-4 w-4" />
+                <CirclePlus className="h-4 w-4" />
                 Create Api
               </Link>
             </Button>
